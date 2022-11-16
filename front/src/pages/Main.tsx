@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { DeviceSelector } from "../components/DeviceSelector";
-import { TDevice } from "../type/device";
+import { Video } from "../components/Video";
 
 const MainFrame = styled.div`
   width: 100vw;
@@ -19,27 +19,69 @@ const constraints = {
   'audio': true
 }
 
-export const Main: React.FC = () => {
-  useEffect(() => {
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then(stream => {
-          console.log('Got MediaStream:', stream);
-      })
-      .catch(error => {
-          console.error('Error accessing media devices.', error);
-      });
-  }, []);
+interface ISelectedDevice {
+  audio?: MediaDeviceInfo;
+  video?: MediaDeviceInfo;
+}
 
-  // const loadConnectedDevices = (type: TDevice, )
+export const Main: React.FC = () => {
+  const [selectedDevice, setSelectedDevice] = useState<ISelectedDevice>();
+  const [localStream, setLocalStream] = useState<MediaStream>();
+
+  const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
+    switch (device.kind) {
+      case "audioinput":
+        setSelectedDevice(selectedDevice => {
+          return {
+            video: selectedDevice?.video,
+            audio: device
+          }
+        })
+        break;
+      case "videoinput":
+        setSelectedDevice(selectedDevice => {
+          return {
+            audio: selectedDevice?.audio,
+            video: device
+          }
+        })
+        break;
+      default:
+        break;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
+
+  useEffect(() => {
+    if(!selectedDevice) return;
+    const constraints: MediaStreamConstraints = {
+      audio: !selectedDevice.audio ? false : {
+        deviceId: selectedDevice.audio.deviceId,
+        echoCancellation: true,
+      },
+      video: !selectedDevice.video ? false : {
+        deviceId: selectedDevice.video.deviceId
+      },
+    }
+    console.log(constraints);
+    
+    navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
+
+  },[selectedDevice])
 
   return (
     <MainFrame>
+      <Video
+        stream={localStream}
+      />
       <DeviceSelectorFrame>
         <DeviceSelector
           kind="videoinput"
+          onChangeDevice={onChangeDevice}
         />
         <DeviceSelector
           kind="audioinput"
+          onChangeDevice={onChangeDevice}
         />
       </DeviceSelectorFrame>
     </MainFrame>

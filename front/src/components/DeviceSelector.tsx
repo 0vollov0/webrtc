@@ -27,37 +27,43 @@ const DeviceOptions: React.FC<DeviceOptionsProps> = ({
 
 interface DeviceSelectorProps {
   kind: MediaDeviceKind;
+  onChangeDevice: (device: MediaDeviceInfo) => void;
 }
 export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
   kind,
+  onChangeDevice,
 }) => {
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selected, setSelected] = useState<string>("");
+  // const [selected, setSelected] = useState<string>("");
 
   const loadConnectedDevices = useCallback((type: MediaDeviceKind) => {
     navigator.mediaDevices.enumerateDevices()
       .then(devices => {
           const filtered = devices.filter(device => device.kind === type);
           setDevices(filtered);
+          if (filtered.length) onChangeDevice(filtered[0])
       });
   },[])
 
   useEffect(() => {
     loadConnectedDevices(kind);
+    navigator.mediaDevices.addEventListener('devicechange', event => {
+      loadConnectedDevices(kind)
+    });
     return () => {
       setDevices([])
     }
   }, [kind, loadConnectedDevices]);
 
-  useEffect(() => {
-    navigator.mediaDevices.addEventListener('devicechange', event => {
-      loadConnectedDevices(kind)
-    });
-  }, [kind, loadConnectedDevices]);
+  const onChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const deviceId = event.currentTarget.value;
+    const device = devices.find((device) => device.deviceId === deviceId);
+    if (device) onChangeDevice(device);
+  },[devices, onChangeDevice])
 
   return (
-    <Selector name={kind} value={selected}>
+    <Selector name={kind} onChange={onChange}>
       <DeviceOptions
         devices={devices}
       />
