@@ -2,16 +2,15 @@ import { useEffect, useRef } from "react";
 import styled from "styled-components"
 
 const VideoScreen = styled.video`
-  width: 320px;
-  height: 320px;
-  /* background-color: antiquewhite; */
+  height: 100%;
+  border-radius: 5px;
 `
 
 interface VideoProps {
   stream?: MediaStream;
 }
 
-export const Video: React.FC<VideoProps> = ({
+export const LocalVideo: React.FC<VideoProps> = ({
   stream
 }) => {
   const ref = useRef<HTMLVideoElement>(null);
