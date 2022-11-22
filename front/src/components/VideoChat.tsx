@@ -61,7 +61,7 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
 
   },[selectedDevice])
-  
+
   return (
     <VideoChatFrame>
       <LocalVideo

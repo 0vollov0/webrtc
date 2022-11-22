@@ -1,0 +1,18 @@
+{
+  "name": "server-signal",
+  "version": "1.0.0",
+  "description": "this is signal server that help before peer connected",
+  "main": "src/index.ts",
+  "repository": "https://github.com/0vollov0/webrtc",
+  "author": "0vollov0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "js-base64": "^3.7.3",
+    "ws": "^8.11.0",
+    "common": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.3"
+  }
+}
