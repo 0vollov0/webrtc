@@ -2,6 +2,8 @@ interface IConfig {
   signalHost: string;
 }
 
+console.log('export')
+
 export const config:IConfig = {
-  signalHost: "http://localhost:8080"
+  signalHost: "ws://localhost:8080"
 };

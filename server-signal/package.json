@@ -7,6 +7,9 @@
   "author": "0vollov0",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
   "dependencies": {
     "js-base64": "^3.7.3",
     "ws": "^8.11.0",

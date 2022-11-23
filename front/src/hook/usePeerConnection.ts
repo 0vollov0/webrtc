@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import WebSocket from 'ws';
 import { Signal } from 'common';
-
-interface UsePeerConnectionProps {
-  signalHost: string;
-}
+import { config } from "../config";
 
 type UsePeerConnectionReturn = [boolean, (callback: (err: undefined | any) => void) => void]
 
@@ -12,28 +8,21 @@ const RTCConfiguration: RTCConfiguration = {
   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
 }
 
-export const usePeerConnection = ({ 
-  signalHost 
-}: UsePeerConnectionProps): UsePeerConnectionReturn => {
-  const wsRef = useRef<WebSocket>();
-  const [wsConnected, setWsConnected] = useState<boolean>(false);
+export const usePeerConnection = (): UsePeerConnectionReturn => {
+  const signalChannel = useRef<WebSocket>();
+  const [connected, setConnected] = useState<boolean>(false);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
 
-  const onMessage = useCallback((event: WebSocket.MessageEvent) => {
+  const onMessage = useCallback((event: MessageEvent<any>) => {
 
   },[])
 
   useEffect(() => {
-    wsRef.current = new WebSocket(signalHost).on('open',() => setWsConnected(true));
-  }, [signalHost]);
-
-  useEffect(() => {
-    if (!wsConnected) return;
-    wsRef.current?.addEventListener('message', onMessage);
+    signalChannel.current?.addEventListener('message', onMessage);
     return () => {
-      wsRef.current?.removeAllListeners().close();
+      signalChannel.current?.removeEventListener('message', onMessage)
     }
-  }, [wsConnected, wsRef, onMessage]);
+  }, [signalChannel, onMessage]);
 
   useEffect(() => {
     setPeerConnection(new RTCPeerConnection(RTCConfiguration))
@@ -45,8 +34,8 @@ export const usePeerConnection = ({
       data: offer,
     }
     const data = JSON.stringify(signal);
-    wsRef.current?.send(data);
-  },[wsRef])
+    signalChannel.current?.send(data);
+  },[signalChannel])
 
   const createOffer = useCallback((callback: (err: undefined | any) => void) => {
     if (!peerConnection) return;
@@ -62,8 +51,12 @@ export const usePeerConnection = ({
       .catch(callback)
   },[peerConnection, sendOffer])
 
+  useEffect(() => {
+    signalChannel.current = new WebSocket(`${config.signalHost}?userId=${new Date().getTime()}`);
+  }, []);
+
   return [
-    wsConnected,
+    connected,
     createOffer,
   ];
 }

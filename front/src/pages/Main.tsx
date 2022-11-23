@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import styled from "styled-components";
 import { VideoChat } from "../components/VideoChat";
 
@@ -8,6 +9,9 @@ const MainFrame = styled.div`
 `
 
 export const Main: React.FC = () => {
+  useEffect(() => {
+    console.log("Main Render")
+  }, []);
   return (
     <MainFrame>
       <VideoChat/>

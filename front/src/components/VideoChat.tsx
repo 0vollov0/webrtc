@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import { usePeerConnection } from "../hook/usePeerConnection";
 import { LocalController } from "./LocalController";
 import { LocalVideo } from "./LocalVideo";
+import { config } from "../config";
 
 const VideoChatFrame = styled.div`
   width: 100%;
@@ -20,6 +22,7 @@ interface ISelectedDevice {
 export const VideoChat: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<ISelectedDevice>();
   const [localStream, setLocalStream] = useState<MediaStream>();
+  const [ createOffer ] = usePeerConnection();
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -56,11 +59,17 @@ export const VideoChat: React.FC = () => {
         deviceId: selectedDevice.video.deviceId
       },
     }
-    console.log(constraints);
-    
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
-
   },[selectedDevice])
+
+  // useEffect(() => {
+  //   console.log(connected,"connected");
+  // }, [connected]);
+
+  useEffect(() => {
+    console.log("VideoChat");
+    
+  }, []);
 
   return (
     <VideoChatFrame>
