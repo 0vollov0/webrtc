@@ -30,6 +30,7 @@ export const usePeerConnection = (): UsePeerConnectionReturn => {
 
   const sendOffer = useCallback((offer: RTCSessionDescriptionInit) => {
     const signal: Signal = {
+      roomId: 'fdfds',
       type: 'offer',
       data: offer,
     }
@@ -53,10 +54,13 @@ export const usePeerConnection = (): UsePeerConnectionReturn => {
 
   useEffect(() => {
     signalChannel.current = new WebSocket(`${config.signalHost}?userId=${new Date().getTime()}`);
+    return () => {
+      if (signalChannel.current) signalChannel.current.close();
+    }
   }, []);
 
   return [
-    connected,
+    signalChannel.current ? Boolean(signalChannel.current.readyState === 1) : false,
     createOffer,
   ];
 }

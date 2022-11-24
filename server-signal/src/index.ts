@@ -2,8 +2,10 @@ import WebSocket, { WebSocketServer } from 'ws';
 import { Signal, isSignal } from 'common';
 import { IncomingMessage } from 'http';
 import Room from './Room';
+import NomadGroup from './NomadGroup';
 
-const room = new Room();
+const nomadGroup = new NomadGroup();
+const roomMap = new Map<string, Room>();
 
 const wss = new WebSocketServer({
   port: 8080
@@ -16,12 +18,26 @@ const getUserId = (req: IncomingMessage) => {
   return userId;
 }
 
+const onClose = (ws: WebSocket.WebSocket) => {
+  const result = nomadGroup.exit(ws);
+  if (result) return;
+  const rooms = Array.from(roomMap.values());
+  for (const id in rooms) {
+    if (Object.prototype.hasOwnProperty.call(rooms, id)) {
+      const room = rooms[id];
+      if (room.exit(ws)) break;
+    }
+  }
+}
+
+const roomCleaner = (id: string) => {
+  roomMap.delete(id);
+}
 
 wss.on('connection', (ws, req) => {
-  console.log('connect');
   const userId = getUserId(req);
   if (!userId) return;
-  room.connect(ws, userId);
+  nomadGroup.join(ws, userId);
 
   ws.on('message',(data, isBinary) => {
     const dataString = data.toString();
@@ -30,7 +46,8 @@ wss.on('connection', (ws, req) => {
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
       switch (signal.type) {
         case "offer":
-          room.sendSignalToAll(ws, signal);
+          roomMap.set(signal.roomId, new Room(signal.roomId, roomCleaner));
+          nomadGroup.migrate(ws, roomMap.get(signal.roomId));
           break;
         default:
           break;
@@ -39,6 +56,5 @@ wss.on('connection', (ws, req) => {
       console.error(error);
     }
   })
-  ws.on('close',(code, reason) => {
-  })
+  ws.on('close',() => onClose(ws))
 })

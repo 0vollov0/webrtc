@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { usePeerConnection } from "../hook/usePeerConnection";
 import { LocalController } from "./LocalController";
 import { LocalVideo } from "./LocalVideo";
-import { config } from "../config";
+import { RoomController } from "./room/RoomController";
 
 const VideoChatFrame = styled.div`
   width: 100%;
@@ -11,7 +11,7 @@ const VideoChatFrame = styled.div`
   display: grid;
   place-items: center;
 
-  grid-template-rows: auto 150px;
+  grid-template-rows: auto 100px 100px;
 `
 
 interface ISelectedDevice {
@@ -22,7 +22,7 @@ interface ISelectedDevice {
 export const VideoChat: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<ISelectedDevice>();
   const [localStream, setLocalStream] = useState<MediaStream>();
-  const [ createOffer ] = usePeerConnection();
+  const [ connectedSignalChannel, createOffer ] = usePeerConnection();
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -62,20 +62,16 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
-  // useEffect(() => {
-  //   console.log(connected,"connected");
-  // }, [connected]);
-
   useEffect(() => {
-    console.log("VideoChat");
-    
-  }, []);
+    if(connectedSignalChannel) createOffer(() => {});
+  }, [connectedSignalChannel, createOffer]);
 
   return (
     <VideoChatFrame>
       <LocalVideo
         stream={localStream}
       />
+      <RoomController/>
       <LocalController
         onChangeDevice={onChangeDevice}
       />
