@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Signal } from 'common';
 import { config } from "../config";
 
-type UsePeerConnectionReturn = [boolean, (roomId: string, callback: (err: undefined | any) => void) => void]
+// type UsePeerConnectionReturn = [boolean, (roomId: string, callback: (err: undefined | any) => void) => void]
+
+type UsePeerConnectionReturn = ReturnType<() => [boolean, (roomId: string, callback: (err: undefined | any) => void) => void]>;
 
 const RTCConfiguration: RTCConfiguration = {
   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]

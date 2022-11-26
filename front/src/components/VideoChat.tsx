@@ -62,16 +62,19 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
-  useEffect(() => {
-    if(connectedSignalChannel) createOffer("roomId",() => {});
-  }, [connectedSignalChannel, createOffer]);
+  // useEffect(() => {
+  //   if(connectedSignalChannel) createOffer("roomId",() => {});
+  // }, [connectedSignalChannel, createOffer]);
 
   return (
     <VideoChatFrame>
       <LocalVideo
         stream={localStream}
       />
-      <RoomController/>
+      <RoomController
+        connectedSignalChannel={connectedSignalChannel}
+        createOffer={createOffer}
+      />
       <LocalController
         onChangeDevice={onChangeDevice}
       />
