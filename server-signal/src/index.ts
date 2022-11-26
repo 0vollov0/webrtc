@@ -1,11 +1,11 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import { Signal, isSignal } from 'common';
 import { IncomingMessage } from 'http';
-import Room from './Room';
-import NomadGroup from './NomadGroup';
+import ChatRoom from './Room/ChatRoom';
+import BreakRoom from './Room/BreakRoom';
 
-const nomadGroup = new NomadGroup();
-const roomMap = new Map<string, Room>();
+const breakRoom = new BreakRoom();
+const roomMap = new Map<string, ChatRoom>();
 
 const wss = new WebSocketServer({
   port: 8080
@@ -19,7 +19,7 @@ const getUserId = (req: IncomingMessage) => {
 }
 
 const onClose = (ws: WebSocket.WebSocket) => {
-  const result = nomadGroup.exit(ws);
+  const result = breakRoom.exit(ws);
   if (result) return;
   const rooms = Array.from(roomMap.values());
   for (const id in rooms) {
@@ -37,17 +37,21 @@ const roomCleaner = (id: string) => {
 wss.on('connection', (ws, req) => {
   const userId = getUserId(req);
   if (!userId) return;
-  nomadGroup.join(ws, userId);
+  breakRoom.join(ws, userId);
 
   ws.on('message',(data, isBinary) => {
     const dataString = data.toString();
     try {
-      const signal: Signal = JSON.parse(dataString);
+      const signal: Signal<any> = JSON.parse(dataString);
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
       switch (signal.type) {
-        case "offer":
-          roomMap.set(signal.roomId, new Room(signal.roomId, roomCleaner));
-          nomadGroup.migrate(ws, roomMap.get(signal.roomId));
+        case "Offer":
+          roomMap.set(signal.roomId, new ChatRoom(signal.roomId, roomCleaner));
+          roomMap.get(signal.roomId)?.setOffer(signal.data);
+          breakRoom.migrate(ws, roomMap.get(signal.roomId));
+          break;
+        case "Answer":
+          
           break;
         default:
           break;

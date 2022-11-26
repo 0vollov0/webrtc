@@ -1,7 +1,7 @@
-export type TSignal = 'offer';
+export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom';
 
-export interface Signal {
+export interface Signal<T> {
   type: TSignal;
   roomId: string;
-  data: RTCSessionDescriptionInit;
+  data: T;
 }

@@ -1,11 +1,11 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import Room, { IRoom } from './Room';
+import { Room } from './Room';
 
-interface INomadGroup extends IRoom {
+interface BreakRoom extends Room {
   migrate: (ws: WebSocket.WebSocket, room: Room) => void;
 }
 
-export default class implements INomadGroup {
+export default class implements BreakRoom {
   userWsMap: Map<WebSocket.WebSocket, string>;
   id: string;
   constructor() {

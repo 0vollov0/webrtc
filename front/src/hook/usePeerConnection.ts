@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Signal } from 'common';
 import { config } from "../config";
 
-type UsePeerConnectionReturn = [boolean, (callback: (err: undefined | any) => void) => void]
+type UsePeerConnectionReturn = [boolean, (roomId: string, callback: (err: undefined | any) => void) => void]
 
 const RTCConfiguration: RTCConfiguration = {
   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
@@ -10,7 +10,6 @@ const RTCConfiguration: RTCConfiguration = {
 
 export const usePeerConnection = (): UsePeerConnectionReturn => {
   const signalChannel = useRef<WebSocket>();
-  const [connected, setConnected] = useState<boolean>(false);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
 
   const onMessage = useCallback((event: MessageEvent<any>) => {
@@ -28,23 +27,23 @@ export const usePeerConnection = (): UsePeerConnectionReturn => {
     setPeerConnection(new RTCPeerConnection(RTCConfiguration))
   }, []);
 
-  const sendOffer = useCallback((offer: RTCSessionDescriptionInit) => {
-    const signal: Signal = {
-      roomId: 'fdfds',
-      type: 'offer',
+  const sendOffer = useCallback((roomId: string, offer: RTCSessionDescriptionInit) => {
+    const signal: Signal<RTCSessionDescriptionInit> = {
+      roomId,
+      type: 'Offer',
       data: offer,
     }
     const data = JSON.stringify(signal);
     signalChannel.current?.send(data);
   },[signalChannel])
 
-  const createOffer = useCallback((callback: (err: undefined | any) => void) => {
+  const createOffer = useCallback((roomId: string, callback: (err: undefined | any) => void) => {
     if (!peerConnection) return;
     peerConnection.createOffer()
       .then((description) => 
         peerConnection.setLocalDescription(description)
           .then(() => {
-            sendOffer(description);
+            sendOffer(roomId, description);
             callback(undefined);
           })
           .catch(callback)

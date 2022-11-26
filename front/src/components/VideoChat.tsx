@@ -63,7 +63,7 @@ export const VideoChat: React.FC = () => {
   },[selectedDevice])
 
   useEffect(() => {
-    if(connectedSignalChannel) createOffer(() => {});
+    if(connectedSignalChannel) createOffer("roomId",() => {});
   }, [connectedSignalChannel, createOffer]);
 
   return (
