@@ -3,6 +3,7 @@ import styled from "styled-components"
 import { useInput } from "../../hook/useInput"
 import { RoomButton } from "../../styles/button"
 import { RoomInput } from "../../styles/input"
+import { RoomProps } from "./Room"
 import { RoomControllerProps } from "./RoomController"
 
 const CreateRoomFrame = styled.div`
@@ -13,9 +14,7 @@ const CreateRoomFrame = styled.div`
   justify-content: center;
 `
 
-interface CreateRoomProps extends Pick<RoomControllerProps, 'connectedSignalChannel' | 'createOffer'> {
-  handleRoomId: (roomId: string) => void;
-}
+interface CreateRoomProps extends Pick<RoomControllerProps, 'connectedSignalChannel' | 'createOffer'>, Pick<RoomProps, 'handleRoomId'> {}
 
 export const CreateRoom: React.FC<CreateRoomProps> = ({
   connectedSignalChannel,

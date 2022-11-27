@@ -41,17 +41,25 @@ wss.on('connection', (ws, req) => {
 
   ws.on('message',(data, isBinary) => {
     const dataString = data.toString();
+    console.log(dataString);
+    
     try {
       const signal: Signal<any> = JSON.parse(dataString);
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
       switch (signal.type) {
-        case "Offer":
+        case "CreateRoom":
           roomMap.set(signal.roomId, new ChatRoom(signal.roomId, roomCleaner));
           roomMap.get(signal.roomId)?.setOffer(signal.data);
           breakRoom.migrate(ws, roomMap.get(signal.roomId));
-          break;
-        case "Answer":
+          console.log("CreateRoom");
           
+          break;
+        case "JoinRoom":
+          console.log("???");
+          breakRoom.migrate(ws, roomMap.get(signal.roomId));
+          roomMap.get(signal.roomId)?.sendOffer(ws)
+            .then((result) => console.log('send offer to joiner has succeeded'))
+            .catch(console.error);
           break;
         default:
           break;

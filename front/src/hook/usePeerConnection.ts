@@ -1,42 +1,53 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Signal } from 'common';
 import { config } from "../config";
+import { writeSync } from "fs";
 
-// type UsePeerConnectionReturn = [boolean, (roomId: string, callback: (err: undefined | any) => void) => void]
 
-type UsePeerConnectionReturn = ReturnType<() => [boolean, (roomId: string, callback: (err: undefined | any) => void) => void]>;
+export type TCreateOffer = (roomId: string, callback: (err: undefined | any) => void) => void;
+export type TJoinRoom = (roomId: string) => void;
+
+type UsePeerConnectionReturn = ReturnType<() => [
+  boolean,
+  TCreateOffer,
+  TJoinRoom
+]>;
 
 const RTCConfiguration: RTCConfiguration = {
   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
 }
 
 export const usePeerConnection = (): UsePeerConnectionReturn => {
-  const signalChannel = useRef<WebSocket>();
+  // const signalChannel = useRef<WebSocket>();
+  const [signalChannel, setSignalChannel] = useState<WebSocket>();
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
 
   const onMessage = useCallback((event: MessageEvent<any>) => {
+    const { data } = event;
+    const decode: Signal<any> = JSON.parse(data);
 
-  },[])
-
-  useEffect(() => {
-    signalChannel.current?.addEventListener('message', onMessage);
-    return () => {
-      signalChannel.current?.removeEventListener('message', onMessage)
+    switch (decode.type) {
+      case "Offer":
+        console.log("Offer")
+        break;
+    
+      default:
+        break;
     }
-  }, [signalChannel, onMessage]);
+  },[])
 
   useEffect(() => {
     setPeerConnection(new RTCPeerConnection(RTCConfiguration))
   }, []);
 
-  const sendOffer = useCallback((roomId: string, offer: RTCSessionDescriptionInit) => {
+  const sendCreateRoomSignal = useCallback((roomId: string, offer: RTCSessionDescriptionInit) => {
     const signal: Signal<RTCSessionDescriptionInit> = {
       roomId,
-      type: 'Offer',
+      type: 'CreateRoom',
       data: offer,
     }
-    const data = JSON.stringify(signal);
-    signalChannel.current?.send(data);
+    const encode = JSON.stringify(signal);
+    signalChannel?.send(encode);
   },[signalChannel])
 
   const createOffer = useCallback((roomId: string, callback: (err: undefined | any) => void) => {
@@ -45,23 +56,42 @@ export const usePeerConnection = (): UsePeerConnectionReturn => {
       .then((description) => 
         peerConnection.setLocalDescription(description)
           .then(() => {
-            sendOffer(roomId, description);
+            sendCreateRoomSignal(roomId, description);
             callback(undefined);
           })
           .catch(callback)
       )
       .catch(callback)
-  },[peerConnection, sendOffer])
+  },[peerConnection, sendCreateRoomSignal])
+
+  const joinRoom = useCallback((roomId: string) => {
+    const signal: Signal<any> = {
+      roomId,
+      type: 'JoinRoom'
+    }
+    const encode = JSON.stringify(signal);
+    signalChannel?.send(encode);
+  },[signalChannel])
 
   useEffect(() => {
-    signalChannel.current = new WebSocket(`${config.signalHost}?userId=${new Date().getTime()}`);
-    return () => {
-      if (signalChannel.current) signalChannel.current.close();
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(`${config.signalHost}?userId=${new Date().getTime()}`);
+      ws.addEventListener('message',onMessage);
+      setSignalChannel(ws);
+    } catch (error) {
+      console.error(error);
     }
-  }, []);
+    return () => {
+      console.log("close");
+      
+      ws.close();
+    }
+  }, [onMessage]);
 
   return [
-    signalChannel.current ? Boolean(signalChannel.current.readyState === 1) : false,
+    signalChannel ? Boolean(signalChannel.readyState === 1) : false,
     createOffer,
+    joinRoom
   ];
 }

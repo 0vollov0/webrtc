@@ -40,6 +40,22 @@ export default class implements ChatRoom {
     })
   }
 
+  sendOffer(ws: WebSocket.WebSocket): Promise<string | boolean> {
+    return new Promise((resolve, reject) => {
+      if(!this.offer) reject("room doesn't have a offer");
+      const signal: Signal<RTCSessionDescriptionInit> = {
+        type: 'Offer',
+        roomId: this.id,
+        data: this.offer
+      }
+      const encode = JSON.stringify(signal);
+      ws.send(encode, (err) =>{
+        if (err) reject(err.message);
+        else resolve(true);
+      })
+    })
+  }
+
   setOffer(offer: RTCSessionDescriptionInit) {
     this.offer = offer;
   }
