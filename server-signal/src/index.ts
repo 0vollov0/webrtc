@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { Signal, isSignal } from 'common';
+import { Signal, isSignal, SignalAnswer } from 'common';
 import { IncomingMessage } from 'http';
 import ChatRoom from './Room/ChatRoom';
 import BreakRoom from './Room/BreakRoom';
@@ -44,22 +44,24 @@ wss.on('connection', (ws, req) => {
     console.log(dataString);
     
     try {
-      const signal: Signal<any> = JSON.parse(dataString);
+      const signal: Signal= JSON.parse(dataString);
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
       switch (signal.type) {
         case "CreateRoom":
           roomMap.set(signal.roomId, new ChatRoom(signal.roomId, roomCleaner));
-          roomMap.get(signal.roomId)?.setOffer(signal.data);
           breakRoom.migrate(ws, roomMap.get(signal.roomId));
-          console.log("CreateRoom");
-          
           break;
         case "JoinRoom":
-          console.log("???");
           breakRoom.migrate(ws, roomMap.get(signal.roomId));
-          roomMap.get(signal.roomId)?.sendOffer(ws)
-            .then((result) => console.log('send offer to joiner has succeeded'))
-            .catch(console.error);
+          break;
+        case "Offer":
+          if (!signal.data) break;
+          roomMap.get(signal.roomId)?.sendOffer(ws, signal.data as RTCSessionDescriptionInit)
+          break;
+        case "Answer":
+          const signalAnswer = signal as SignalAnswer;
+          if (!signalAnswer.data) break;
+          roomMap.get(signal.roomId)?.sendAnswer(signalAnswer.sender, signalAnswer.data);
           break;
         default:
           break;
