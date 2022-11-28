@@ -25,6 +25,7 @@ export const LocalVideo: React.FC<VideoProps> = ({
       ref={ref}
       autoPlay={true}
       controls={false}
+      muted
     />
   )
 }

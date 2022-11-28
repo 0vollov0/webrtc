@@ -51,20 +51,18 @@ export const VideoChat: React.FC = () => {
   useEffect(() => {
     if(!selectedDevice) return;
     const constraints: MediaStreamConstraints = {
-      audio: !selectedDevice.audio ? false : {
+      /* audio: !selectedDevice.audio ? false : {
         deviceId: selectedDevice.audio.deviceId,
         echoCancellation: true,
-      },
+      }, */
+      // local stream should be muted because I don't need listen my voice myself
+      audio: false,
       video: !selectedDevice.video ? false : {
         deviceId: selectedDevice.video.deviceId
       },
     }
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
-
-  // useEffect(() => {
-  //   if(connectedSignalChannel) createOffer("roomId",() => {});
-  // }, [connectedSignalChannel, createOffer]);
 
   return (
     <VideoChatFrame>
