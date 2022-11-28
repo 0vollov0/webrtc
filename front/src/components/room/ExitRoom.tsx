@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { TDisconnect } from "../../hook/usePeerConnection";
 import { RoomButton } from "../../styles/button";
 import { RoomProps } from "./Room";
 
@@ -8,19 +9,20 @@ const ExistRoomFrame = styled.div`
   gap: 0px 10px;
 `
 
-interface ExitRoomProps extends RoomProps {
+interface ExitRoomProps {
   roomId: string;
+  disconnect: TDisconnect
 }
 
 export const ExitRoom: React.FC<ExitRoomProps> = ({
   roomId,
-  handleRoomId
+  disconnect
 }) => {
 
   return (
     <ExistRoomFrame>
       <div>Current Room: {roomId}</div>
-      <RoomButton onClick={() => handleRoomId("")}>Exit Room</RoomButton>
+      <RoomButton onClick={disconnect}>Exit Room</RoomButton>
     </ExistRoomFrame>
   )
 }

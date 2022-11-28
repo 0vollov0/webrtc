@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import styled from "styled-components"
-import { TCreateOffer, TJoinRoom } from "../../hook/usePeerConnection";
+import { TCreateOffer, TCreateRoom, TDisconnect, TJoinRoom } from "../../hook/usePeerConnection";
 import { CreateRoom } from "./CreateRoom"
 import { ExitRoom } from "./ExitRoom";
 import { JoinRoom } from "./JoinRoom"
@@ -16,19 +16,23 @@ const RoomControllerFrame = styled.div`
 
 export interface RoomControllerProps {
   connectedSignalChannel: boolean;
-  createOffer: TCreateOffer;
+  roomId: string;
+  createRoom: TCreateRoom;
   joinRoom: TJoinRoom;
+  disconnect: TDisconnect
 }
 
 export const RoomController:React.FC<RoomControllerProps> = ({
+  roomId,
   connectedSignalChannel,
-  createOffer,
-  joinRoom
+  createRoom,
+  joinRoom,
+  disconnect
 }) => {
-  const [roomId, setRoomId] = useState<string>("");
+  /* const [roomId, setRoomId] = useState<string>("");
   const handleRoomId: THandleRoomId = useCallback((roomId: string) => {
     setRoomId(roomId)
-  },[])
+  },[]) */
 
   return (
     <RoomControllerFrame>
@@ -38,11 +42,9 @@ export const RoomController:React.FC<RoomControllerProps> = ({
           <>
             <CreateRoom
               connectedSignalChannel={connectedSignalChannel}
-              createOffer={createOffer}
-              handleRoomId={handleRoomId}
+              createRoom={createRoom}
             />
             <JoinRoom
-              handleRoomId={handleRoomId}
               joinRoom={joinRoom}
             />
           </>
@@ -50,7 +52,7 @@ export const RoomController:React.FC<RoomControllerProps> = ({
         : (
           <ExitRoom
             roomId={roomId}
-            handleRoomId={handleRoomId}
+            disconnect={disconnect}
           />
         )
       }

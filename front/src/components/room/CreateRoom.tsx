@@ -14,26 +14,24 @@ const CreateRoomFrame = styled.div`
   justify-content: center;
 `
 
-interface CreateRoomProps extends Pick<RoomControllerProps, 'connectedSignalChannel' | 'createOffer'>, Pick<RoomProps, 'handleRoomId'> {}
+interface CreateRoomProps extends Pick<RoomControllerProps, 'connectedSignalChannel' | 'createRoom'> {}
 
 export const CreateRoom: React.FC<CreateRoomProps> = ({
   connectedSignalChannel,
-  createOffer,
-  handleRoomId
+  createRoom,
 }) => {
   const [ input, onInput, initInput ] = useInput();
 
   const callbackCreateOffer = useCallback((err: undefined | any) => {
     if (err) return;
-    handleRoomId(input);
     initInput();
     window.alert("The room was created successfully");
-  },[handleRoomId, initInput, input])
+  },[initInput])
 
   const onCreateRoom = useCallback(() => {
     if (!connectedSignalChannel) return;
-    createOffer(input, callbackCreateOffer)
-  },[connectedSignalChannel, input, createOffer, callbackCreateOffer])
+    createRoom(input);
+  },[connectedSignalChannel, createRoom, input])
 
   return (
     <CreateRoomFrame>

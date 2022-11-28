@@ -21,6 +21,7 @@ export default class implements ChatRoom {
 
   join(ws: WebSocket.WebSocket, userId: string) {
     this.userWsMap.set(ws, userId);
+    this.sendResponse(ws);
   }
 
   exit(ws: WebSocket.WebSocket) {
@@ -32,6 +33,15 @@ export default class implements ChatRoom {
   sendSignalToAll(signal: Signal) {
     const encode = JSON.stringify(signal);
     this.userWsMap.forEach((_, ws) => ws.send(encode));
+  }
+
+  sendResponse(ws: WebSocket.WebSocket) {
+    const signal: Signal = {
+      type: 'ResponseRoom',
+      roomId: this.id
+    }
+    const encode = JSON.stringify(signal);
+    ws.send(encode);
   }
 
   sendOffer(sender: WebSocket.WebSocket, offer: RTCSessionDescriptionInit) {

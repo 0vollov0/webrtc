@@ -14,10 +14,9 @@ const CreateRoomFrame = styled.div`
   justify-content: center;
 `
 
-interface JoinRoomProps extends RoomProps, Pick<RoomControllerProps, 'joinRoom'> {}
+interface JoinRoomProps extends Pick<RoomControllerProps, 'joinRoom'> {}
 
 export const JoinRoom: React.FC<JoinRoomProps> = ({
-  handleRoomId,
   joinRoom
 }) => {
   const [ input, onInput, initInput ] = useInput();
@@ -29,9 +28,8 @@ export const JoinRoom: React.FC<JoinRoomProps> = ({
   }, [initInput]);
 
   const onClick = useCallback(() => {
-    handleRoomId(input);
     joinRoom(input);
-  },[handleRoomId, joinRoom, input])
+  },[joinRoom, input])
 
   return (
     <CreateRoomFrame>
