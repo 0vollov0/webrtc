@@ -1,4 +1,4 @@
-import { Signal, SignalAnswer } from 'common';
+import { Signal, SignalAnswer, SignalOffer } from 'common';
 import WebSocket, { WebSocketServer } from 'ws';
 import { Room } from './Room';
 
@@ -44,17 +44,16 @@ export default class implements ChatRoom {
     ws.send(encode);
   }
 
-  sendOffer(sender: WebSocket.WebSocket, offer: RTCSessionDescriptionInit) {
-    // sendOffer should be able to send offer to all except sender
-    // fix it
-    const signal: Signal = {
+  sendOffer(sender: string, senderWs: WebSocket.WebSocket, offer: RTCSessionDescriptionInit) {
+    const signal: SignalOffer = {
       type: 'Offer',
       roomId: this.id,
-      data: offer
+      data: offer,
+      sender,
     }
     const encode = JSON.stringify(signal);
     Array.from(this.userWsMap.keys())
-      .filter((ws) => ws !== sender)
+      .filter((ws) => ws !== senderWs)
       .forEach((ws) => ws.send(encode))
   }
 
@@ -69,4 +68,7 @@ export default class implements ChatRoom {
     Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === sender)?.[0].send(encode);
   }
 
+  findUserId(ws: WebSocket.WebSocket) {
+    return this.userWsMap.get(ws);
+  }
 }

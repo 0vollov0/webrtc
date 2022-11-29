@@ -8,6 +8,7 @@ export interface Signal {
 
 export interface SignalOffer extends Signal {
   type: "Offer";
+  sender: string;
 }
 
 export interface SignalAnswer extends Signal {

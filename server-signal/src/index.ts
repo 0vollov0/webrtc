@@ -55,8 +55,9 @@ wss.on('connection', (ws, req) => {
           breakRoom.migrate(ws, roomMap.get(signal.roomId));
           break;
         case "Offer":
-          if (!signal.data) break;
-          roomMap.get(signal.roomId)?.sendOffer(ws, signal.data as RTCSessionDescriptionInit)
+          const signalOffer = signal as SignalAnswer;
+          if (!signalOffer.data) break;
+          roomMap.get(signal.roomId)?.sendOffer(signalOffer.sender, ws, signalOffer.data);
           break;
         case "Answer":
           const signalAnswer = signal as SignalAnswer;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react"
 import styled from "styled-components"
-import { useInput } from "../../hook/useInput"
+import { useInput } from "../../hooks/useInput"
 import { RoomButton } from "../../styles/button"
 import { RoomInput } from "../../styles/input"
 import { RoomProps } from "./Room"

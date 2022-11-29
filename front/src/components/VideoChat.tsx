@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import { usePeerConnection } from "../hook/usePeerConnection";
+import { UserContext } from "../contexts/UserConetxt";
+import { usePeerConnection } from "../hooks/usePeerConnection";
 import { LocalController } from "./LocalController";
 import { LocalVideo } from "./LocalVideo";
 import { RoomController } from "./room/RoomController";
@@ -22,7 +23,8 @@ interface ISelectedDevice {
 export const VideoChat: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<ISelectedDevice>();
   const [localStream, setLocalStream] = useState<MediaStream>();
-  const [ connectedSignalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection();
+  const { userId } = useContext(UserContext);
+  const [ connectedSignalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection({userId});
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {

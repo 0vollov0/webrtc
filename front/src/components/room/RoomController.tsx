@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import styled from "styled-components"
-import { TCreateOffer, TCreateRoom, TDisconnect, TJoinRoom } from "../../hook/usePeerConnection";
+import { TCreateOffer, TCreateRoom, TDisconnect, TJoinRoom } from "../../hooks/usePeerConnection";
 import { CreateRoom } from "./CreateRoom"
 import { ExitRoom } from "./ExitRoom";
 import { JoinRoom } from "./JoinRoom"

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { TDisconnect } from "../../hook/usePeerConnection";
+import { TDisconnect } from "../../hooks/usePeerConnection";
 import { RoomButton } from "../../styles/button";
 import { RoomProps } from "./Room";
 
