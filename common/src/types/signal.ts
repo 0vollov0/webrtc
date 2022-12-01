@@ -14,4 +14,5 @@ export interface SignalOffer extends Signal {
 export interface SignalAnswer extends Signal {
   type: 'Answer';
   sender: string;
+  receiver: string;
 }

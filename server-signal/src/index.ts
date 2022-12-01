@@ -41,8 +41,6 @@ wss.on('connection', (ws, req) => {
 
   ws.on('message',(data, isBinary) => {
     const dataString = data.toString();
-    console.log(dataString);
-    
     try {
       const signal: Signal= JSON.parse(dataString);
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
@@ -62,7 +60,7 @@ wss.on('connection', (ws, req) => {
         case "Answer":
           const signalAnswer = signal as SignalAnswer;
           if (!signalAnswer.data) break;
-          roomMap.get(signal.roomId)?.sendAnswer(signalAnswer.sender, signalAnswer.data);
+          roomMap.get(signal.roomId)?.sendAnswer(signalAnswer.sender, signalAnswer.receiver, signalAnswer.data);
           break;
         default:
           break;

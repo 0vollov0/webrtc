@@ -57,15 +57,16 @@ export default class implements ChatRoom {
       .forEach((ws) => ws.send(encode))
   }
 
-  sendAnswer(sender: string, answer: RTCSessionDescriptionInit) {
+  sendAnswer(sender: string, receiver: string, answer: RTCSessionDescriptionInit) {
     const signal: SignalAnswer = {
       type: 'Answer',
       roomId: this.id,
       data: answer,
       sender,
+      receiver,
     }
     const encode = JSON.stringify(signal);
-    Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === sender)?.[0].send(encode);
+    Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === receiver)?.[0].send(encode);
   }
 
   findUserId(ws: WebSocket.WebSocket) {

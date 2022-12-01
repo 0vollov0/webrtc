@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Signal, SignalOffer } from 'common';
+import { Signal, SignalAnswer, SignalOffer } from 'common';
 import { config } from "../config";
+import { createPeerConnection } from "../funcs/createPeerConnection";
 
 export type TCreateOffer = (roomId: string, callback: (err: undefined | any) => void) => void;
 export type TCreateRoom = (roomId: string) => void;
@@ -19,15 +20,15 @@ interface UsePeerConnectionProps {
   userId: string;
 }
 
-const RTCConfiguration: RTCConfiguration = {
-  iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
-}
+// const RTCConfiguration: RTCConfiguration = {
+//   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
+// }
 
 export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerConnectionReturn => {
   const signalChannel = useRef<WebSocket>();
   const [roomId, setRoomId] = useState<string>("");
-  const localPeerConnection = useRef<RTCPeerConnection>(new RTCPeerConnection(RTCConfiguration));
-  const [remotePeerConnectionMap, setRemotePeerConnectionMap] = useState<Map<string, RTCPeerConnection>>(new Map());
+  const localPeerConnection = useRef<RTCPeerConnection>(createPeerConnection());
+  const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
 
   const exitRoom = useCallback(() => {
     // signalChannel.current?.close();
@@ -56,15 +57,16 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   },[sendSignal])
 
   const creteOffer = useCallback((roomId: string, callback: (roomId: string, offer: RTCSessionDescriptionInit) => void) => {
-    if (!localPeerConnection) return;
-    localPeerConnection.current.createOffer()
-      .then((description) => 
-        localPeerConnection.current.setLocalDescription(description)
-          .then(() => callback(roomId, description))
-          .catch(() => console.log("local peer connection couldn't set description"))
-      )
-      .catch(() => console.error("local peer connection couldn't create offer description"))
-  },[])
+    console.log("CreateOffer");
+    
+    const peerConnection = createPeerConnection();
+    peerConnection.createOffer().then((description) => 
+      peerConnection.setLocalDescription(description)
+        .then(() => callback(roomId, description))
+        .catch(() => console.log("local peer connection couldn't set description"))
+    ).catch(() => console.error("local peer connection couldn't create offer description"))
+    remotePeerConnectionMap.current.set(userId, peerConnection);
+  },[userId])
 
   const sendOfferSignal = useCallback((roomId: string, offer: RTCSessionDescriptionInit) => {
     const signal: SignalOffer = {
@@ -76,55 +78,58 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
     sendSignal(signal);
   },[sendSignal, userId])
 
-  const createAnswer = useCallback((offer: RTCSessionDescriptionInit, callback: (answer: RTCSessionDescriptionInit | undefined) => void) => {
-    if (!localPeerConnection) return;
-     localPeerConnection.current.setRemoteDescription(offer);
-     localPeerConnection.current.createAnswer()
-      .then((answer) => 
-        localPeerConnection.current.setLocalDescription(answer)
-          .then(() => callback(answer))
-          .catch(() => callback(undefined))
-        )
-      .catch(() => callback(undefined))
-  },[])
-
-  const sendAnswerSignal = useCallback((roomId: string, answer: RTCSessionDescriptionInit) => {
-    const signal: Signal = {
+  const sendAnswerSignal = useCallback((roomId: string, sender: string, receiver: string, answer: RTCSessionDescriptionInit) => {
+    const signal: SignalAnswer = {
       roomId,
       type: 'Answer',
       data: answer,
+      sender,
+      receiver
     }
     const encode = JSON.stringify(signal);
     // signalChannel?.send(encode);
     signalChannel.current?.send(encode);
   },[])
 
+  const onOffer = useCallback((signalOffer: SignalOffer) => {
+    if (!signalOffer.data) return;
+    const peerConnection = createPeerConnection();
+    peerConnection.setRemoteDescription(new RTCSessionDescription(signalOffer.data));
+    peerConnection.createAnswer().then((answer) =>
+      peerConnection.setLocalDescription(answer)
+        .then(() => sendAnswerSignal(signalOffer.roomId, userId, signalOffer.sender, answer))
+        .catch(() => {})
+    ).catch(() => {});
+    remotePeerConnectionMap.current.set(signalOffer.sender, peerConnection)
+  },[sendAnswerSignal, userId])
+
+  const onAnswer = useCallback((signalAnswer: SignalAnswer) => {
+    if (!signalAnswer.data) return;
+    remotePeerConnectionMap.current
+      .get(signalAnswer.sender)
+      ?.setRemoteDescription(new RTCSessionDescription(signalAnswer.data));
+  },[])
+
   const onMessage = useCallback((event: MessageEvent<any>) => {
     const { data } = event;
     const decode: Signal = JSON.parse(data);
-    console.log(decode);
     
     switch (decode.type) {
       case "ResponseRoom":
         setRoomId(decode.roomId);
         break;
       case "Offer":
-        if (!decode.data) break;
-        createAnswer(decode.data as RTCSessionDescriptionInit, (answer) => {
-          if (answer) {
-            sendAnswerSignal(decode.roomId, answer);
-            // set offer to remote peer connection
-          }
-        })
+        const signalOffer: SignalOffer = decode as SignalOffer;
+        onOffer(signalOffer);
         break;
       case "Answer":
-        if (!decode.data) break;
-          // set offer to remote peer connection
+        const signalAnswer: SignalAnswer = decode as SignalAnswer;
+        onAnswer(signalAnswer)
         break;
       default:
         break;
     }
-  },[createAnswer, sendAnswerSignal])
+  },[onAnswer, onOffer])
 
   useEffect(() => {
     let ws: WebSocket;
@@ -145,6 +150,12 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   useEffect(() => {
     if (roomId !== "") creteOffer(roomId, sendOfferSignal)
   }, [creteOffer, roomId, sendOfferSignal]);
+
+  useEffect(() => {
+    setInterval(() => {
+      console.log(remotePeerConnectionMap);
+    },5000)
+  }, []);
 
   return [
     // signalChannel ? Boolean(signalChannel.readyState === 1) : false,
