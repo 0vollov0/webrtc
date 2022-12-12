@@ -1,10 +1,8 @@
-import { useCallback, useState } from "react";
 import styled from "styled-components"
-import { TCreateOffer, TCreateRoom, TDisconnect, TJoinRoom } from "../../hooks/usePeerConnection";
+import { TCreateRoom, TDisconnect, TJoinRoom } from "../../hooks/usePeerConnection";
 import { CreateRoom } from "./CreateRoom"
 import { ExitRoom } from "./ExitRoom";
 import { JoinRoom } from "./JoinRoom"
-import { THandleRoomId } from "./Room";
 
 const RoomControllerFrame = styled.div`
   width: 100%;

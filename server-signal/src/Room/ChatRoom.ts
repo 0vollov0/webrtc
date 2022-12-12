@@ -1,4 +1,4 @@
-import { Signal, SignalAnswer, SignalOffer } from 'common';
+import { Signal, AnswerSignal, OfferSignal, ResponseRoomSignal } from 'common';
 import WebSocket, { WebSocketServer } from 'ws';
 import { Room } from './Room';
 
@@ -20,8 +20,8 @@ export default class implements ChatRoom {
   }
 
   join(ws: WebSocket.WebSocket, userId: string) {
-    this.userWsMap.set(ws, userId);
     this.sendResponse(ws);
+    this.userWsMap.set(ws, userId);
   }
 
   exit(ws: WebSocket.WebSocket) {
@@ -36,29 +36,33 @@ export default class implements ChatRoom {
   }
 
   sendResponse(ws: WebSocket.WebSocket) {
-    const signal: Signal = {
+    console.log("sendResponse");
+    const signal: ResponseRoomSignal = {
       type: 'ResponseRoom',
-      roomId: this.id
+      roomId: this.id,
+      participants: Array.from(this.userWsMap.values())
     }
     const encode = JSON.stringify(signal);
     ws.send(encode);
   }
 
-  sendOffer(sender: string, senderWs: WebSocket.WebSocket, offer: RTCSessionDescriptionInit) {
-    const signal: SignalOffer = {
+  sendOffer(sender: string, receiver: string, offer: RTCSessionDescriptionInit) {
+    const signal: OfferSignal = {
       type: 'Offer',
       roomId: this.id,
       data: offer,
       sender,
+      receiver
     }
     const encode = JSON.stringify(signal);
-    Array.from(this.userWsMap.keys())
+    Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === receiver)?.[0].send(encode);
+    /* Array.from(this.userWsMap.keys())
       .filter((ws) => ws !== senderWs)
-      .forEach((ws) => ws.send(encode))
+      .forEach((ws) => ws.send(encode)) */
   }
 
   sendAnswer(sender: string, receiver: string, answer: RTCSessionDescriptionInit) {
-    const signal: SignalAnswer = {
+    const signal: AnswerSignal = {
       type: 'Answer',
       roomId: this.id,
       data: answer,

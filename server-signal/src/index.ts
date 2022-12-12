@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { Signal, isSignal, SignalAnswer } from 'common';
+import { Signal, isSignal, AnswerSignal } from 'common';
 import { IncomingMessage } from 'http';
 import ChatRoom from './Room/ChatRoom';
 import BreakRoom from './Room/BreakRoom';
@@ -19,6 +19,7 @@ const getUserId = (req: IncomingMessage) => {
 }
 
 const onClose = (ws: WebSocket.WebSocket) => {
+  console.log("onClose");
   const result = breakRoom.exit(ws);
   if (result) return;
   const rooms = Array.from(roomMap.values());
@@ -44,6 +45,8 @@ wss.on('connection', (ws, req) => {
     try {
       const signal: Signal= JSON.parse(dataString);
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
+      console.log(signal.type);
+      
       switch (signal.type) {
         case "CreateRoom":
           roomMap.set(signal.roomId, new ChatRoom(signal.roomId, roomCleaner));
@@ -53,14 +56,17 @@ wss.on('connection', (ws, req) => {
           breakRoom.migrate(ws, roomMap.get(signal.roomId));
           break;
         case "Offer":
-          const signalOffer = signal as SignalAnswer;
-          if (!signalOffer.data) break;
-          roomMap.get(signal.roomId)?.sendOffer(signalOffer.sender, ws, signalOffer.data);
+          const offerSignal = signal as AnswerSignal;
+          if (!offerSignal.data) break;
+          roomMap.get(offerSignal.roomId)?.sendOffer(offerSignal.sender, offerSignal.receiver, offerSignal.data);
           break;
         case "Answer":
-          const signalAnswer = signal as SignalAnswer;
-          if (!signalAnswer.data) break;
-          roomMap.get(signal.roomId)?.sendAnswer(signalAnswer.sender, signalAnswer.receiver, signalAnswer.data);
+          const AnswerSignal = signal as AnswerSignal;
+          if (!AnswerSignal.data) break;
+          roomMap.get(signal.roomId)?.sendAnswer(AnswerSignal.sender, AnswerSignal.receiver, AnswerSignal.data);
+          break;
+        case "Ping":
+
           break;
         default:
           break;

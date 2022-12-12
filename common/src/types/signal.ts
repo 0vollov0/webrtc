@@ -1,4 +1,4 @@
-export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom' | 'ResponseRoom';
+export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom' | 'ResponseRoom' | 'Ping';
 
 export interface Signal {
   type: TSignal;
@@ -6,12 +6,18 @@ export interface Signal {
   data?: RTCSessionDescriptionInit;
 }
 
-export interface SignalOffer extends Signal {
-  type: "Offer";
-  sender: string;
+export interface ResponseRoomSignal extends Signal {
+  type: 'ResponseRoom';
+  participants: string[];
 }
 
-export interface SignalAnswer extends Signal {
+export interface OfferSignal extends Signal {
+  type: "Offer";
+  sender: string;
+  receiver: string;
+}
+
+export interface AnswerSignal extends Signal {
   type: 'Answer';
   sender: string;
   receiver: string;
