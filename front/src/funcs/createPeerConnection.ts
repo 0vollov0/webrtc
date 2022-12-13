@@ -1,6 +1,10 @@
 const RTCConfiguration: RTCConfiguration = {
-  iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
-}
+  iceServers: [
+    {
+      urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"],
+    },
+  ],
+};
 
 export const createPeerConnection = (signalingChannel: WebSocket) => {
   const peerConnection = new RTCPeerConnection(RTCConfiguration);
@@ -11,11 +15,19 @@ export const createPeerConnection = (signalingChannel: WebSocket) => {
     }
   });
 
+  peerConnection.onicecandidate = (ev) => {
+    console.log(ev,"???");
+    
+  }
+
   peerConnection.addEventListener('connectionstatechange', event => {
+    console.log(event,"connectionstatechange");
+    
     if (peerConnection.connectionState === 'connected') {
       // Peers connected!
       console.log('Peers connected!');
     }
   });
+
   return peerConnection;
 }

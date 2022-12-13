@@ -20,13 +20,7 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
   connectedSignalChannel,
   createRoom,
 }) => {
-  const [ input, onInput, initInput ] = useInput();
-
-  const callbackCreateOffer = useCallback((err: undefined | any) => {
-    if (err) return;
-    initInput();
-    window.alert("The room was created successfully");
-  },[initInput])
+  const [ input, onInput ] = useInput();
 
   const onCreateRoom = useCallback(() => {
     if (!connectedSignalChannel) return;

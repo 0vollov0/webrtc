@@ -18,16 +18,17 @@ type UsePeerConnectionReturn = ReturnType<() => [
 
 interface UsePeerConnectionProps {
   userId: string;
+  localStream?: MediaStream;
 }
 
 // const RTCConfiguration: RTCConfiguration = {
 //   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
 // }
 
-export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerConnectionReturn => {
+export const usePeerConnection = (userId: string, localStream?: MediaStream): UsePeerConnectionReturn => {
+  // const [localStream, setLocalStream] = useState<MediaStream | undefined>(_localStream);
   const signalChannel = useRef<WebSocket>();
   const [roomId, setRoomId] = useState<string>("");
-  const localPeerConnection = useRef<RTCPeerConnection>();
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
 
   const exitRoom = useCallback(() => {
@@ -43,15 +44,18 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   const creteOffer = useCallback((roomId: string, userId: string, callback: (roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => void) => {
     if(!signalChannel.current) return;
     const peerConnection = createPeerConnection(signalChannel.current);
+    localStream?.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, localStream);
+    });
     peerConnection.createOffer().then((description) => {
       peerConnection.setLocalDescription(description)
         .then(() => {
           callback(roomId, userId, description);
           remotePeerConnectionMap.current.set(userId, peerConnection);
         })
-        .catch((e) => { throw new Error(e) })
+        .catch((e) => { console.log(e)})
     }).catch((e) => { throw new Error(e) })
-  },[])
+  },[localStream])
 
   const sendOfferSignal = useCallback((roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => {
     const signal: OfferSignal = {
@@ -79,6 +83,9 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   const onOffer = useCallback((offerSignal: OfferSignal) => {
     if (!offerSignal.data || !signalChannel.current) return;
     const peerConnection = createPeerConnection(signalChannel.current);
+    localStream?.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, localStream);
+    });
     peerConnection.setRemoteDescription(new RTCSessionDescription(offerSignal.data)).then(() => {
       peerConnection.createAnswer().then((answer) =>
         peerConnection.setLocalDescription(answer)
@@ -88,12 +95,10 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
     }).finally(() => {
       remotePeerConnectionMap.current.set(offerSignal.sender, peerConnection)
     })
-  },[sendAnswerSignal, userId])
+  },[sendAnswerSignal, userId, localStream])
 
   const onAnswer = useCallback((signalAnswer: AnswerSignal) => {
     if (!signalAnswer.data) return;
-    console.log(signalAnswer.sender,"???");
-    
     remotePeerConnectionMap.current
       .get(signalAnswer.sender)
       ?.setRemoteDescription(new RTCSessionDescription(signalAnswer.data)).catch((e) => {
@@ -111,8 +116,6 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   const onMessage = useCallback((event: MessageEvent<any>) => {
     const { data } = event;
     const decode: Signal = JSON.parse(data);
-    console.log("onMessage", decode);
-    
     switch (decode.type) {
       case "ResponseRoom":
         onResponseRoom(decode as ResponseRoomSignal);
@@ -129,6 +132,8 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   },[onAnswer, onOffer, onResponseRoom])
 
   const createRoom = useCallback((roomId: string) => {
+    console.log("create Room");
+    
     const signal: Signal = {
       roomId,
       type: 'CreateRoom'
@@ -145,6 +150,7 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
   },[sendSignal])
 
   useEffect(() => {
+    if (!localStream) return;
     if (signalChannel.current) return;
     let ws: WebSocket;
     try {
@@ -156,7 +162,7 @@ export const usePeerConnection = ({ userId }: UsePeerConnectionProps): UsePeerCo
     }
     return () => {
     }
-  }, [onMessage, userId]);
+  }, [onMessage, userId, localStream]);
 
   return [
     // signalChannel ? Boolean(signalChannel.readyState === 1) : false,

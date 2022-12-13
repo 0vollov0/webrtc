@@ -24,7 +24,7 @@ export const VideoChat: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<ISelectedDevice>();
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { userId } = useContext(UserContext);
-  const [ connectedSignalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection({userId});
+  const [ connectedSignalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection(userId, localStream);
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -53,10 +53,10 @@ export const VideoChat: React.FC = () => {
   useEffect(() => {
     if(!selectedDevice) return;
     const constraints: MediaStreamConstraints = {
-      /* audio: !selectedDevice.audio ? false : {
-        deviceId: selectedDevice.audio.deviceId,
-        echoCancellation: true,
-      }, */
+      // audio: !selectedDevice.audio ? false : {
+      //   deviceId: selectedDevice.audio.deviceId,
+      //   echoCancellation: true,
+      // },
       // local stream should be muted because I don't need listen my voice myself
       audio: false,
       video: !selectedDevice.video ? false : {
