@@ -1,4 +1,4 @@
-import { Signal, AnswerSignal, OfferSignal, ResponseRoomSignal } from 'common';
+import { Signal, AnswerSignal, OfferSignal, ResponseRoomSignal, IcecandidateSignal } from 'common';
 import WebSocket, { WebSocketServer } from 'ws';
 import { Room } from './Room';
 
@@ -31,8 +31,8 @@ export default class implements ChatRoom {
   }
 
   sendSignalToAll(signal: Signal) {
-    const encode = JSON.stringify(signal);
-    this.userWsMap.forEach((_, ws) => ws.send(encode));
+    const encoded = JSON.stringify(signal);
+    this.userWsMap.forEach((_, ws) => ws.send(encoded));
   }
 
   sendResponse(ws: WebSocket.WebSocket) {
@@ -42,35 +42,30 @@ export default class implements ChatRoom {
       roomId: this.id,
       participants: Array.from(this.userWsMap.values())
     }
-    const encode = JSON.stringify(signal);
-    ws.send(encode);
+    const encoded = JSON.stringify(signal);
+    ws.send(encoded);
   }
 
-  sendOffer(sender: string, receiver: string, offer: RTCSessionDescriptionInit) {
-    const signal: OfferSignal = {
-      type: 'Offer',
-      roomId: this.id,
-      data: offer,
-      sender,
-      receiver
-    }
-    const encode = JSON.stringify(signal);
-    Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === receiver)?.[0].send(encode);
-    /* Array.from(this.userWsMap.keys())
-      .filter((ws) => ws !== senderWs)
-      .forEach((ws) => ws.send(encode)) */
+  sendOffer(signal: OfferSignal) {
+    if (!signal.data) return;
+    const encoded = JSON.stringify(signal);
+    this.sendToUser(signal.receiver, encoded);
   }
 
-  sendAnswer(sender: string, receiver: string, answer: RTCSessionDescriptionInit) {
-    const signal: AnswerSignal = {
-      type: 'Answer',
-      roomId: this.id,
-      data: answer,
-      sender,
-      receiver,
-    }
-    const encode = JSON.stringify(signal);
-    Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === receiver)?.[0].send(encode);
+  sendAnswer(signal: AnswerSignal) {
+    if (!signal.data) return;
+    const encoded = JSON.stringify(signal);
+    this.sendToUser(signal.receiver, encoded);
+  }
+
+  sendIcecandidate(signal: IcecandidateSignal) {
+    if (!signal.data) return;
+    const encoded = JSON.stringify(signal);
+    this.sendToUser(signal.receiver, encoded); 
+  }
+
+  sendToUser(receiver: string, encoded: string) {
+    Array.from(this.userWsMap.entries()).find(([ws, userId]) => userId === receiver)?.[0].send(encoded);
   }
 
   findUserId(ws: WebSocket.WebSocket) {

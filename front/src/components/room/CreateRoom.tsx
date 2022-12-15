@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 import { useInput } from "../../hooks/useInput"
 import { RoomButton } from "../../styles/button"
@@ -14,18 +14,18 @@ const CreateRoomFrame = styled.div`
   justify-content: center;
 `
 
-interface CreateRoomProps extends Pick<RoomControllerProps, 'connectedSignalChannel' | 'createRoom'> {}
+interface CreateRoomProps extends Pick<RoomControllerProps, 'signalChannel' | 'createRoom'> {}
 
 export const CreateRoom: React.FC<CreateRoomProps> = ({
-  connectedSignalChannel,
+  signalChannel,
   createRoom,
 }) => {
   const [ input, onInput ] = useInput();
 
   const onCreateRoom = useCallback(() => {
-    if (!connectedSignalChannel) return;
+    if (signalChannel?.readyState !== 1) return;
     createRoom(input);
-  },[connectedSignalChannel, createRoom, input])
+  },[signalChannel, createRoom, input])
 
   return (
     <CreateRoomFrame>

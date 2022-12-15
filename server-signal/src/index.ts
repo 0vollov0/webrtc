@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { Signal, isSignal, AnswerSignal } from 'common';
+import { Signal, isSignal, AnswerSignal, IcecandidateSignal, OfferSignal } from 'common';
 import { IncomingMessage } from 'http';
 import ChatRoom from './Room/ChatRoom';
 import BreakRoom from './Room/BreakRoom';
@@ -56,17 +56,13 @@ wss.on('connection', (ws, req) => {
           breakRoom.migrate(ws, roomMap.get(signal.roomId));
           break;
         case "Offer":
-          const offerSignal = signal as AnswerSignal;
-          if (!offerSignal.data) break;
-          roomMap.get(offerSignal.roomId)?.sendOffer(offerSignal.sender, offerSignal.receiver, offerSignal.data);
+          roomMap.get(signal.roomId)?.sendOffer(signal as OfferSignal);
           break;
         case "Answer":
-          const AnswerSignal = signal as AnswerSignal;
-          if (!AnswerSignal.data) break;
-          roomMap.get(signal.roomId)?.sendAnswer(AnswerSignal.sender, AnswerSignal.receiver, AnswerSignal.data);
+          roomMap.get(signal.roomId)?.sendAnswer(signal as AnswerSignal);
           break;
-        case "Ping":
-
+        case "Icecandidate":
+          roomMap.get(signal.roomId)?.sendIcecandidate(signal as IcecandidateSignal);
           break;
         default:
           break;

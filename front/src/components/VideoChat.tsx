@@ -24,7 +24,7 @@ export const VideoChat: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<ISelectedDevice>();
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { userId } = useContext(UserContext);
-  const [ connectedSignalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection(userId, localStream);
+  const [ signalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection(userId, localStream);
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -73,7 +73,7 @@ export const VideoChat: React.FC = () => {
       />
       <RoomController
         roomId={roomId}
-        connectedSignalChannel={connectedSignalChannel}
+        signalChannel={signalChannel}
         createRoom={createRoom}
         joinRoom={joinRoom}
         disconnect={disconnect}

@@ -1,4 +1,4 @@
-export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom' | 'ResponseRoom' | 'Ping';
+export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom' | 'ResponseRoom' | 'Icecandidate';
 
 export interface Signal {
   type: TSignal;
@@ -21,4 +21,17 @@ export interface AnswerSignal extends Signal {
   type: 'Answer';
   sender: string;
   receiver: string;
+}
+
+export interface AnswerSignal extends Signal {
+  type: 'Answer';
+  sender: string;
+  receiver: string;
+}
+
+export interface IcecandidateSignal extends Omit<Signal, 'data'> {
+  type: 'Icecandidate';
+  sender: string;
+  receiver: string;
+  data?: RTCIceCandidate;
 }

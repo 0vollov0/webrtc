@@ -13,7 +13,7 @@ const RoomControllerFrame = styled.div`
 `
 
 export interface RoomControllerProps {
-  connectedSignalChannel: boolean;
+  signalChannel?: WebSocket;
   roomId: string;
   createRoom: TCreateRoom;
   joinRoom: TJoinRoom;
@@ -22,7 +22,7 @@ export interface RoomControllerProps {
 
 export const RoomController:React.FC<RoomControllerProps> = ({
   roomId,
-  connectedSignalChannel,
+  signalChannel,
   createRoom,
   joinRoom,
   disconnect
@@ -39,7 +39,7 @@ export const RoomController:React.FC<RoomControllerProps> = ({
         ? (
           <>
             <CreateRoom
-              connectedSignalChannel={connectedSignalChannel}
+              signalChannel={signalChannel}
               createRoom={createRoom}
             />
             <JoinRoom

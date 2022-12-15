@@ -1,3 +1,5 @@
+import { IcecandidateSignal } from "common";
+
 const RTCConfiguration: RTCConfiguration = {
   iceServers: [
     {
@@ -6,28 +8,47 @@ const RTCConfiguration: RTCConfiguration = {
   ],
 };
 
-export const createPeerConnection = (signalingChannel: WebSocket) => {
+export interface CreatePeerConnectionProps {
+  signalingChannel: WebSocket;
+  roomId: string;
+  sender: string;
+  receiver: string;
+  onTrack: (userId: string, stream: MediaStream) => void;
+}
+
+
+export const createPeerConnection = ({
+  onTrack,
+  receiver,
+  roomId,
+  sender,
+  signalingChannel
+}:CreatePeerConnectionProps) => {
   const peerConnection = new RTCPeerConnection(RTCConfiguration);
-  peerConnection.addEventListener('icecandidate', event => {
-    console.log("icecandidate", event);
+  peerConnection.addEventListener('icecandidate', (event) => {
     if (event.candidate) {
-        // signalingChannel.send(JSON.stringify({'new-ice-candidate': event.candidate}));
+      const signal: IcecandidateSignal = {
+        type: 'Icecandidate',
+        sender,
+        receiver,
+        roomId,
+        data: event.candidate
+      }
+      signalingChannel.send(JSON.stringify(signal))
     }
-  });
+  })
 
-  peerConnection.onicecandidate = (ev) => {
-    console.log(ev,"???");
-    
-  }
-
-  peerConnection.addEventListener('connectionstatechange', event => {
-    console.log(event,"connectionstatechange");
-    
+  peerConnection.addEventListener('connectionstatechange', (event) => {
     if (peerConnection.connectionState === 'connected') {
       // Peers connected!
       console.log('Peers connected!');
     }
-  });
+  })
+
+  peerConnection.addEventListener('track', (event) => {
+    const [remoteStream] = event.streams;
+    onTrack(receiver, remoteStream);
+  })
 
   return peerConnection;
 }
