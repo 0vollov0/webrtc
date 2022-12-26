@@ -9,6 +9,7 @@ export type TJoinRoom = (roomId: string) => void;
 export type TDisconnect = () => void;
 
 type UsePeerConnectionReturn = ReturnType<() => [
+  Map<string, MediaStream>,
   WebSocket | undefined,
   string,
   TCreateRoom,
@@ -16,17 +17,11 @@ type UsePeerConnectionReturn = ReturnType<() => [
   TDisconnect
 ]>;
 
-interface UsePeerConnectionProps {
-  userId: string;
-  localStream?: MediaStream;
-}
-
 // const RTCConfiguration: RTCConfiguration = {
 //   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
 // }
 
 export const usePeerConnection = (userId: string, localStream?: MediaStream): UsePeerConnectionReturn => {
-  // const [localStream, setLocalStream] = useState<MediaStream | undefined>(_localStream);
   const signalChannel = useRef<WebSocket>();
   const [roomId, setRoomId] = useState<string>("");
   const [streamMap, setStreamMap] = useState<Map<string, MediaStream>>(new Map());
@@ -193,7 +188,7 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
   }, [onMessage, userId, localStream]);
 
   return [
-    // signalChannel ? Boolean(signalChannel.readyState === 1) : false,
+    streamMap,
     signalChannel.current,
     roomId,
     createRoom,

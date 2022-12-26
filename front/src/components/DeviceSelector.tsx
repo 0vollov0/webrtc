@@ -44,7 +44,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
           setDevices(filtered);
           if (filtered.length) onChangeDevice(filtered[0])
       });
-  },[])
+  },[onChangeDevice])
 
   useEffect(() => {
     loadConnectedDevices(kind);
