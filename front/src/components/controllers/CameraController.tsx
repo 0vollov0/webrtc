@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { BsMicFill } from "react-icons/bs"
+import { BsCameraVideoFill } from "react-icons/bs"
 import { GoChevronUp, GoChevronDown } from "react-icons/go"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ControllerProps } from "./controller"
@@ -9,7 +9,7 @@ const Font = styled.div`
   font-size: 13px;
 `
 
-const Mic = styled.div`
+const Camera = styled.div`
   color: #9EA1A6;
 `
 
@@ -54,6 +54,7 @@ const MicControllerFrame = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  width: max-content;
   :hover {
     cursor: pointer;
   }
@@ -66,19 +67,20 @@ const MicControllerFrame = styled.div`
     color: white;
   }
 
-  :hover ${Mic} {
+  :hover ${Camera} {
     color: white;
   }
 `
 
-const VoiceFrame = styled.div`
+const CameraFrame = styled.div`
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 2px 0px;
   width: 80px;
   place-items: center;
 `
-export const MicController: React.FC<ControllerProps> = ({
+
+export const CameraController: React.FC<ControllerProps> = ({
   kind,
   onChangeDevice,
   selectedDevice
@@ -117,12 +119,12 @@ export const MicController: React.FC<ControllerProps> = ({
 
   return (
     <MicControllerFrame>
-      <VoiceFrame>
-        <Mic>
-          <BsMicFill size={18}/>
-        </Mic>
-        <Font>Mute</Font>
-      </VoiceFrame>
+      <CameraFrame>
+        <Camera>
+          <BsCameraVideoFill size={18}/>
+        </Camera>
+        <Font>Stop Video</Font>
+      </CameraFrame>
       <ChevronFrame
         onClick={onDropdown}
       >

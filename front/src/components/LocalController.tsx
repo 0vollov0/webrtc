@@ -1,6 +1,6 @@
 import styled from "styled-components"
+import { CameraController } from "./controllers/CameraController";
 import { MicController } from "./controllers/MicController";
-import { DeviceSelector } from "./DeviceSelector"
 import { SelectedDevice } from "./VideoChat";
 
 const LocalControllerFrame = styled.div`
@@ -32,14 +32,11 @@ export const LocalController:React.FC<LocalControllerProps> = ({
         onChangeDevice={onChangeDevice}
         selectedDevice={selectedDevice?.audio}
       />
-      <DeviceSelector
+      <CameraController
         kind="videoinput"
         onChangeDevice={onChangeDevice}
+        selectedDevice={selectedDevice?.video}
       />
-      {/* <DeviceSelector
-        kind="audioinput"
-        onChangeDevice={onChangeDevice}
-      /> */}
     </LocalControllerFrame>
   )
 }
