@@ -5,13 +5,13 @@ import { usePeerConnection } from "../hooks/usePeerConnection";
 import { LocalController } from "./LocalController";
 import { LocalVideo } from "./LocalVideo";
 import { RoomController } from "./room/RoomController";
+import { Streams } from "./Streams";
 
 const VideoChatFrame = styled.div`
   width: 100%;
   height: 100%;
   display: grid;
   place-items: center;
-
   grid-template-rows: auto 100px 80px;
 `
 
@@ -66,11 +66,23 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
+  useEffect(() => {
+    if(localStream?.getVideoTracks()[0]){
+
+      console.log(localStream?.getVideoTracks()[0].getSettings());
+    }
+    
+  }, [localStream]);
+
   return (
     <VideoChatFrame>
-      <LocalVideo
-        stream={localStream}
+      <Streams
+        remoteStreamMap={remoteStreamMap}
+        localStream={localStream}
       />
+      {/* <LocalVideo
+        stream={localStream}
+      /> */}
       <RoomController
         roomId={roomId}
         signalChannel={signalChannel}
