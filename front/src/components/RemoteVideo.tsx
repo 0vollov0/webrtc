@@ -1,27 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components"
+import { ScreenMode } from "../types";
+import { VideoFrame, VideoScreen } from "./LocalVideo";
 
-const VideoScreen = styled.video`
-  border-radius: 5px;
-  width: auto;
-`
-
-const VideoFrame = styled.div`
-  display: grid;
-  place-items: center;
-  /* width: 100%;
-  height: 100%; */
-  background-color: #363535;
-  border-radius: 5px;
-`
 interface RemoteVideoProps {
   remoteId: string;
+  screenMode: ScreenMode;
   stream?: MediaStream;
 }
 
 export const RemoteVideo: React.FC<RemoteVideoProps> = ({
   stream,
-  remoteId
+  remoteId,
+  screenMode
 }) => {
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -39,21 +30,21 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log(stream?.getVideoTracks(),"remote stream");
+    console.log(stream?.getVideoTracks(),remoteId,"remote stream");
     
-  }, [stream]);
+  }, [stream, remoteId]);
 
   return (
     <VideoFrame
       ref={frameRef}
     >
-      {/* <VideoScreen
+      <VideoScreen
+        screenMode={screenMode}
         ref={videoRef}
         autoPlay={true}
         controls={false}
         muted
-        height={height*0.8}
-      /> */}
+      />
     </VideoFrame>
   )
 }

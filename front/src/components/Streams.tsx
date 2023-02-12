@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import { ScreenMode } from "../types";
 import { LocalVideo } from "./LocalVideo";
+import { RemoteVideo } from "./RemoteVideo";
 
-type Mode = 'row' | 'column';
 
 interface StreamsFrameProps {
-  mode: Mode;
+  mode: ScreenMode;
   count: number;
 }
 
@@ -26,8 +27,8 @@ export const Streams: React.FC<StreamsProps> = ({
   localStream,
   remoteStreamMap
 }) => {
-  const [streamCnt, setStreamCnt] = useState(0);
-  const [ mode, setMode ] = useState<Mode>('row');
+  const [ streamCnt, setStreamCnt] = useState(0);
+  const [ screenMode, setScreenMode ] = useState<ScreenMode>('horizontal');
   const [ size, setSize ] = useState<{
     width: number,
     height: number,
@@ -43,7 +44,7 @@ export const Streams: React.FC<StreamsProps> = ({
       width: frameRef.current.clientWidth,
       height: frameRef.current.clientHeight,
     })
-    setMode(frameRef.current.clientWidth - frameRef.current.clientHeight > 0 ? 'column' : 'row');
+    setScreenMode(frameRef.current.clientWidth - frameRef.current.clientHeight > 0 ? 'vertical' : 'horizontal');
   }
 
   useEffect(() => {
@@ -59,22 +60,35 @@ export const Streams: React.FC<StreamsProps> = ({
   }, [localStream, remoteStreamMap]);
 
   useEffect(() => {
-    console.log(mode);
+    console.log(screenMode);
     
-  },[mode])
+  },[screenMode])
+
+  useEffect(() => {
+    console.log(remoteStreamMap);
+    
+  },[remoteStreamMap])
 
   return (
     <StreamsFrame
       ref={frameRef}
-      mode={mode}
+      mode={screenMode}
       count={2}
     >
       <LocalVideo
         stream={localStream}
-      /> 
-      <LocalVideo
-        stream={localStream}
+        screenMode={screenMode}
       />
+      {
+        Array.from(remoteStreamMap).map(([id, stream], index) => (
+          <RemoteVideo
+            key={index}
+            screenMode={screenMode}
+            stream={stream} 
+            remoteId={id}      
+          />
+        ))
+      }
     </StreamsFrame>
   )
 }

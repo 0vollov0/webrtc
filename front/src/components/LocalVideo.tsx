@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components"
+import { ScreenMode } from "../types";
 
-const VideoScreen = styled.video`
-  /* width: inherit; */
-  height: inherit;
+export const VideoScreen = styled.video<{screenMode: ScreenMode}>`
+  ${({screenMode}) => {
+    if (screenMode === 'horizontal') return `width: 100%;`
+    else return `height: 100%;`
+  }}
   object-fit: fill;
   border-radius: 2.5px;
 `
 
-const VideoFrame = styled.div`
+export const VideoFrame = styled.div`
   display: grid;
   place-items: center;
   width: 100%;
@@ -18,10 +21,12 @@ const VideoFrame = styled.div`
 `
 
 interface VideoProps {
+  screenMode: ScreenMode;
   stream?: MediaStream;
 }
 
 export const LocalVideo: React.FC<VideoProps> = ({
+  screenMode,
   stream
 }) => {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -47,6 +52,7 @@ export const LocalVideo: React.FC<VideoProps> = ({
   return (
     <VideoFrame>
       <VideoScreen
+        screenMode={screenMode}
         ref={videoRef}
         autoPlay={true}
         controls={false}

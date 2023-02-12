@@ -22,10 +22,10 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
 }) => {
   const [ input, onInput ] = useInput();
 
-  const onCreateRoom = useCallback(() => {
-    if (signalChannel?.readyState !== 1) return;
+  const onCreateRoom = () => {
+    // if (signalChannel?.readyState !== 1) return;
     createRoom(input);
-  },[signalChannel, createRoom, input])
+  }
 
   return (
     <CreateRoomFrame>

@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { UserContext } from "../contexts/UserConetxt";
 import { usePeerConnection } from "../hooks/usePeerConnection";
 import { LocalController } from "./LocalController";
-import { LocalVideo } from "./LocalVideo";
 import { RoomController } from "./room/RoomController";
 import { Streams } from "./Streams";
 
@@ -68,13 +67,13 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
-  useEffect(() => {
-    if(localStream?.getVideoTracks()[0]){
+  // useEffect(() => {
+  //   if(localStream?.getVideoTracks()[0]){
 
-      console.log(localStream?.getVideoTracks()[0].getSettings());
-    }
+  //     console.log(localStream?.getVideoTracks()[0].getSettings());
+  //   }
     
-  }, [localStream]);
+  // }, [localStream]);
 
   return (
     <VideoChatFrame>
