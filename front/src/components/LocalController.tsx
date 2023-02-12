@@ -6,7 +6,6 @@ import { SelectedDevice } from "./VideoChat";
 const LocalControllerFrame = styled.div`
   display: flex;
   flex-direction: row;
-  /* justify-content: center; */
   align-items: center;
   justify-content: center;
   gap: 0px 30px;

@@ -13,6 +13,8 @@ const VideoChatFrame = styled.div`
   display: grid;
   place-items: center;
   grid-template-rows: auto 100px 80px;
+  background-color: #363535;
+  border-radius: 5px;
 `
 
 export interface SelectedDevice {
@@ -80,9 +82,6 @@ export const VideoChat: React.FC = () => {
         remoteStreamMap={remoteStreamMap}
         localStream={localStream}
       />
-      {/* <LocalVideo
-        stream={localStream}
-      /> */}
       <RoomController
         roomId={roomId}
         signalChannel={signalChannel}

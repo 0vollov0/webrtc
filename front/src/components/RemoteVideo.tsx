@@ -9,8 +9,8 @@ const VideoScreen = styled.video`
 const VideoFrame = styled.div`
   display: grid;
   place-items: center;
-  width: 100%;
-  height: 100%;
+  /* width: 100%;
+  height: 100%; */
   background-color: #363535;
   border-radius: 5px;
 `
@@ -47,13 +47,13 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
     <VideoFrame
       ref={frameRef}
     >
-      <VideoScreen
+      {/* <VideoScreen
         ref={videoRef}
         autoPlay={true}
         controls={false}
         muted
         height={height*0.8}
-      />
+      /> */}
     </VideoFrame>
   )
 }

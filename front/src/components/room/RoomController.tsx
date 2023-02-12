@@ -10,6 +10,7 @@ const RoomControllerFrame = styled.div`
   display: grid;
   place-items: center;
   gap: 10px 0px;
+  background: #363535;
 `
 
 export interface RoomControllerProps {

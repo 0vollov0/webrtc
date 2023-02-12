@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Signal, AnswerSignal, OfferSignal, ResponseRoomSignal, IcecandidateSignal } from 'common';
 import { config } from "../config";
 import { createPeerConnection } from "../funcs/createPeerConnection";
@@ -27,23 +27,23 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
   const [streamMap, setStreamMap] = useState<Map<string, MediaStream>>(new Map());
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
 
-  const exitRoom = useCallback(() => {
+  const exitRoom = () => {
     signalChannel.current?.close();
     setRoomId("");
-  },[])
+  }
 
-  const sendSignal = useCallback((signal: Signal) => {
+  const sendSignal = (signal: Signal) => {
     const encode = JSON.stringify(signal);
     signalChannel.current?.send(encode);
-  },[])
+  }
 
-  const onTrack = useCallback((userId: string, stream: MediaStream) => {
+  const onTrack = (userId: string, stream: MediaStream) => {
     setStreamMap((streamMap) => {
       return new Map(streamMap.set(userId, stream));
     })
-  },[])
+  }
 
-  const creteOffer = useCallback((roomId: string, receiver: string, callback: (roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => void) => {
+  const creteOffer = (roomId: string, receiver: string, callback: (roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => void) => {
     if(!signalChannel.current) return;
     const peerConnection = createPeerConnection({
       onTrack,
@@ -63,9 +63,9 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
         })
         .catch((e) => { console.log(e)})
     }).catch((e) => { throw new Error(e) })
-  },[userId, localStream, onTrack])
+  }
 
-  const sendOfferSignal = useCallback((roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => {
+  const sendOfferSignal = (roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => {
     const signal: OfferSignal = {
       roomId,
       type: 'Offer',
@@ -74,9 +74,9 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       receiver,
     }
     sendSignal(signal);
-  },[sendSignal, userId])
+  }
 
-  const sendAnswerSignal = useCallback((roomId: string, sender: string, receiver: string, answer: RTCSessionDescriptionInit) => {
+  const sendAnswerSignal = (roomId: string, sender: string, receiver: string, answer: RTCSessionDescriptionInit) => {
     const signal: AnswerSignal = {
       roomId,
       type: 'Answer',
@@ -86,9 +86,9 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     }
     const encode = JSON.stringify(signal);
     signalChannel.current?.send(encode);
-  },[])
+  }
 
-  const onOffer = useCallback((offerSignal: OfferSignal) => {
+  const onOffer = (offerSignal: OfferSignal) => {
     if (!offerSignal.data || !signalChannel.current) return;
     const peerConnection = createPeerConnection({
       signalingChannel: signalChannel.current, 
@@ -109,31 +109,29 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     }).finally(() => {
       remotePeerConnectionMap.current.set(offerSignal.sender, peerConnection)
     })
-  },[sendAnswerSignal, userId, localStream, onTrack])
+  }
 
-  const onAnswer = useCallback((signalAnswer: AnswerSignal) => {
+  const onAnswer = (signalAnswer: AnswerSignal) => {
     if (!signalAnswer.data) return;
     remotePeerConnectionMap.current
       .get(signalAnswer.sender)
       ?.setRemoteDescription(new RTCSessionDescription(signalAnswer.data)).catch((e) => {
         console.error(e);
       });
-  },[])
+  }
 
-  const onResponseRoom = useCallback((signal: ResponseRoomSignal) => {
+  const onResponseRoom = (signal: ResponseRoomSignal) => {
     setRoomId(signal.roomId);
     signal.participants.forEach((id) => {
       creteOffer(signal.roomId, id, sendOfferSignal);
     })
-  },[creteOffer, sendOfferSignal])
+  }
 
-  const onIcecandidate = useCallback((signal: IcecandidateSignal) => {
-    console.log("onIcecandidate");
-    
+  const onIcecandidate = (signal: IcecandidateSignal) => {
     remotePeerConnectionMap.current.get(signal.sender)?.addIceCandidate(signal.data);
-  },[])
+  }
 
-  const onMessage = useCallback((event: MessageEvent<any>) => {
+  const onMessage = (event: MessageEvent<any>) => {
     const { data } = event;
     const decoded: Signal = JSON.parse(data);
     switch (decoded.type) {
@@ -152,9 +150,9 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       default:
         break;
     }
-  },[onAnswer, onOffer, onResponseRoom, onIcecandidate])
+  }
 
-  const createRoom = useCallback((roomId: string) => {
+  const createRoom = (roomId: string) => {
     console.log("create Room");
     
     const signal: Signal = {
@@ -162,15 +160,15 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       type: 'CreateRoom'
     }
     sendSignal(signal)
-  },[sendSignal])
+  }
 
-  const joinRoom = useCallback((roomId: string) => {
+  const joinRoom = (roomId: string) => {
     const signal: Signal = {
       roomId,
       type: 'JoinRoom'
     }
     sendSignal(signal)
-  },[sendSignal])
+  }
 
   useEffect(() => {
     if (!localStream) return;

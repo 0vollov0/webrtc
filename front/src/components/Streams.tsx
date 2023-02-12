@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { LocalVideo } from "./LocalVideo";
-import { RemoteVideo } from "./RemoteVideo";
 
-const StreamsFrame = styled.div<{count: number}>`
+type Mode = 'row' | 'column';
+
+interface StreamsFrameProps {
+  mode: Mode;
+  count: number;
+}
+
+const StreamsFrame = styled.div<StreamsFrameProps>`
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
-  grid-template-rows: repeat(${({count}) => count}, 1fr);
-  grid-template-columns: repeat(${({count}) => count}, 1fr);
-  gap: 5px 5px;
 `
 
 interface StreamsProps {
@@ -18,29 +21,57 @@ interface StreamsProps {
   localStream?: MediaStream;
 }
 
+
 export const Streams: React.FC<StreamsProps> = ({
   localStream,
   remoteStreamMap
 }) => {
   const [streamCnt, setStreamCnt] = useState(0);
+  const [ mode, setMode ] = useState<Mode>('row');
+  const [ size, setSize ] = useState<{
+    width: number,
+    height: number,
+  }>({
+    width: 0,
+    height: 0,
+  })
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  const onResize = () => {
+    if (!frameRef.current) return;
+    setSize({
+      width: frameRef.current.clientWidth,
+      height: frameRef.current.clientHeight,
+    })
+    setMode(frameRef.current.clientWidth - frameRef.current.clientHeight > 0 ? 'column' : 'row');
+  }
+
+  useEffect(() => {
+    onResize();
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+    }
+  },[])
 
   useEffect(() => {
     setStreamCnt(remoteStreamMap.size + (localStream ? 1 : 0));
   }, [localStream, remoteStreamMap]);
 
+  useEffect(() => {
+    console.log(mode);
+    
+  },[mode])
+
   return (
     <StreamsFrame
-      count={Math.ceil(Math.sqrt(streamCnt))}
+      ref={frameRef}
+      mode={mode}
+      count={2}
     >
-      {
-        Array.from(remoteStreamMap.entries()).map(([id, stream]) => (
-          <RemoteVideo
-            key={id}
-            remoteId={id}
-            stream={stream}
-          />
-        ))
-      }
+      <LocalVideo
+        stream={localStream}
+      /> 
       <LocalVideo
         stream={localStream}
       />
