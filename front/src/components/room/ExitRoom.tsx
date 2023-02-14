@@ -6,7 +6,11 @@ const ExistRoomFrame = styled.div`
   display: flex;
   flex-direction: row;
   place-items: center;
-  gap: 0px 10px;
+  gap: 0px 20px;
+`
+
+const RoomIdFrame = styled.div`
+  color: #c7c7c9;
 `
 
 interface ExitRoomProps {
@@ -21,7 +25,7 @@ export const ExitRoom: React.FC<ExitRoomProps> = ({
 
   return (
     <ExistRoomFrame>
-      <div>Current Room: {roomId}</div>
+      <RoomIdFrame>Room: {roomId}</RoomIdFrame>
       <RoomButton onClick={disconnect}>Exit Room</RoomButton>
     </ExistRoomFrame>
   )
