@@ -4,13 +4,7 @@ import { ScreenMode } from "../types";
 import { LocalVideo } from "./LocalVideo";
 import { RemoteVideo } from "./RemoteVideo";
 
-
-interface StreamsFrameProps {
-  mode: ScreenMode;
-  count: number;
-}
-
-const StreamsFrame = styled.div<StreamsFrameProps>`
+const StreamsFrame = styled.div`
   display: grid;
   place-items: center;
   width: 100%;
@@ -36,15 +30,10 @@ export const Streams: React.FC<StreamsProps> = ({
     width: 0,
     height: 0,
   })
-  const frameRef = useRef<HTMLDivElement>(null);
 
   const onResize = () => {
-    if (!frameRef.current) return;
-    setSize({
-      width: frameRef.current.clientWidth,
-      height: frameRef.current.clientHeight,
-    })
-    setScreenMode(frameRef.current.clientWidth - frameRef.current.clientHeight > 0 ? 'vertical' : 'horizontal');
+    // setScreenMode(frameRef.current.clientWidth - frameRef.current.clientHeight > 0 ? 'vertical' : 'horizontal');
+    setScreenMode(window.innerWidth - window.innerHeight > 0 ? 'vertical' : 'horizontal');
   }
 
   useEffect(() => {
@@ -59,22 +48,8 @@ export const Streams: React.FC<StreamsProps> = ({
     setStreamCnt(remoteStreamMap.size + (localStream ? 1 : 0));
   }, [localStream, remoteStreamMap]);
 
-  useEffect(() => {
-    console.log(screenMode);
-    
-  },[screenMode])
-
-  useEffect(() => {
-    console.log(remoteStreamMap);
-    
-  },[remoteStreamMap])
-
   return (
-    <StreamsFrame
-      ref={frameRef}
-      mode={screenMode}
-      count={2}
-    >
+    <StreamsFrame>
       <LocalVideo
         stream={localStream}
         screenMode={screenMode}
