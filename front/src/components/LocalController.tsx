@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styled from "styled-components"
 import { CameraController } from "./controllers/CameraController";
 import { MicController } from "./controllers/MicController";
@@ -23,6 +24,8 @@ export const LocalController:React.FC<LocalControllerProps> = ({
   onChangeDevice,
   selectedDevice
 }) => {
+  const [enableMic, setEnableMic] = useState<boolean>(true);
+  const [enableCamera, setEnableCamera] = useState<boolean>(true);
 
   return (
     <LocalControllerFrame>
@@ -30,11 +33,15 @@ export const LocalController:React.FC<LocalControllerProps> = ({
         kind="audioinput"
         onChangeDevice={onChangeDevice}
         selectedDevice={selectedDevice?.audio}
+        enabled={enableMic}
+        setEnable={(enable) => setEnableMic(enable)}
       />
       <CameraController
         kind="videoinput"
         onChangeDevice={onChangeDevice}
         selectedDevice={selectedDevice?.video}
+        enabled={enableCamera}
+        setEnable={(enable) => setEnableCamera(enable)}
       />
     </LocalControllerFrame>
   )

@@ -1,7 +1,7 @@
 import styled from "styled-components"
-import { BsCameraVideoFill } from "react-icons/bs"
+import { BsCameraVideoFill, BsCameraVideoOffFill } from "react-icons/bs"
 import { GoChevronUp, GoChevronDown } from "react-icons/go"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ControllerProps } from "./controller"
 
 const Font = styled.div`
@@ -83,7 +83,9 @@ const CameraFrame = styled.div`
 export const CameraController: React.FC<ControllerProps> = ({
   kind,
   onChangeDevice,
-  selectedDevice
+  selectedDevice,
+  enabled,
+  setEnable
 }) => {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [dropped, setDropped] = useState<boolean>(false);
@@ -119,11 +121,17 @@ export const CameraController: React.FC<ControllerProps> = ({
 
   return (
     <MicControllerFrame>
-      <CameraFrame>
+      <CameraFrame
+        onClick={() => setEnable(!enabled)}
+      >
         <Camera>
-          <BsCameraVideoFill size={18}/>
+          {
+            enabled
+            ? (<BsCameraVideoFill size={18}/>)
+            : (<BsCameraVideoOffFill size={18}/>)
+          }
         </Camera>
-        <Font>Stop Video</Font>
+        <Font>{enabled ? 'Stop Video' : 'Play Video'}</Font>
       </CameraFrame>
       <ChevronFrame
         onClick={onDropdown}

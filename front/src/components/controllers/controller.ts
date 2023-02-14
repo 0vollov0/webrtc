@@ -8,4 +8,6 @@ export interface ControllerProps {
   kind: MediaDeviceKind;
   onChangeDevice: (device: MediaDeviceInfo) => void;
   selectedDevice?: MediaDeviceInfo;
+  enabled: boolean;
+  setEnable: (enable: boolean) => void;
 }

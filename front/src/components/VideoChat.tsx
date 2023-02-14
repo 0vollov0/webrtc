@@ -67,14 +67,6 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
-  // useEffect(() => {
-  //   if(localStream?.getVideoTracks()[0]){
-
-  //     console.log(localStream?.getVideoTracks()[0].getSettings());
-  //   }
-    
-  // }, [localStream]);
-
   return (
     <VideoChatFrame>
       <Streams

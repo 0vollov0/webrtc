@@ -1,7 +1,7 @@
 import styled from "styled-components"
-import { BsMicFill } from "react-icons/bs"
+import { BsMicFill, BsMicMuteFill } from "react-icons/bs"
 import { GoChevronUp, GoChevronDown } from "react-icons/go"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ControllerProps } from "./controller"
 
 const Font = styled.div`
@@ -81,7 +81,9 @@ const VoiceFrame = styled.div`
 export const MicController: React.FC<ControllerProps> = ({
   kind,
   onChangeDevice,
-  selectedDevice
+  selectedDevice,
+  enabled,
+  setEnable
 }) => {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [dropped, setDropped] = useState<boolean>(false);
@@ -117,11 +119,15 @@ export const MicController: React.FC<ControllerProps> = ({
 
   return (
     <MicControllerFrame>
-      <VoiceFrame>
+      <VoiceFrame
+        onClick={() => setEnable(!enabled)}
+      >
         <Mic>
-          <BsMicFill size={18}/>
+          {
+            enabled ? <BsMicFill size={18}/> : <BsMicMuteFill size={18}/>
+          }
         </Mic>
-        <Font>Mute</Font>
+        <Font>{enabled ? 'Mute' : 'Play'}</Font>
       </VoiceFrame>
       <ChevronFrame
         onClick={onDropdown}

@@ -29,24 +29,11 @@ export const LocalVideo: React.FC<VideoProps> = ({
   screenMode,
   stream
 }) => {
-  const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [ height, setHeight ] = useState<number>(0);
 
   useEffect(() => {
     if (!videoRef.current || !stream) return;
     videoRef.current.srcObject = stream;
-  }, [stream]);
-
-  useEffect(() => {
-    if(frameRef.current){
-      setHeight(frameRef.current?.clientHeight); 
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log(stream?.getVideoTracks(),"local stream");
-    
   }, [stream]);
 
   return (
