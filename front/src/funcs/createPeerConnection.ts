@@ -14,11 +14,13 @@ export interface CreatePeerConnectionProps {
   sender: string;
   receiver: string;
   onTrack: (userId: string, stream: MediaStream) => void;
+  onDisconnect: (userId: string) => void;
 }
 
 
 export const createPeerConnection = ({
   onTrack,
+  onDisconnect,
   receiver,
   roomId,
   sender,
@@ -42,6 +44,8 @@ export const createPeerConnection = ({
     if (peerConnection.connectionState === 'connected') {
       // Peers connected!
       console.log('Peers connected!');
+    } else if (peerConnection.connectionState === 'disconnected') {
+      onDisconnect(receiver);
     }
   })
 

@@ -30,6 +30,12 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
   const exitRoom = () => {
     signalChannel.current?.close();
     setRoomId("");
+    setStreamMap(new Map());
+    if (remotePeerConnectionMap.current) {
+      remotePeerConnectionMap.current.forEach((peer) => {
+        peer.close();
+      })
+    }
   }
 
   const sendSignal = (signal: Signal) => {
@@ -43,10 +49,19 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     })
   }
 
+  const onDisconnect = (userId: string) => {
+    setStreamMap((prev) => {
+      const newState = new Map(prev);
+      newState.delete(userId);
+      return newState;
+    })
+  }
+
   const creteOffer = (roomId: string, receiver: string, callback: (roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => void) => {
     if(!signalChannel.current) return;
     const peerConnection = createPeerConnection({
       onTrack,
+      onDisconnect,
       signalingChannel: signalChannel.current,
       roomId,
       sender: userId,
@@ -96,6 +111,7 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       receiver: offerSignal.sender,
       sender: userId,
       onTrack,
+      onDisconnect,
     });
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
@@ -184,6 +200,11 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     return () => {
     }
   }, [onMessage, userId, localStream]);
+
+  useEffect(() => {
+    console.log(streamMap,"??");
+    
+  }, [streamMap]);
 
   return [
     streamMap,
