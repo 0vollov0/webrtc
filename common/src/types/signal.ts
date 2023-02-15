@@ -1,4 +1,4 @@
-export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom' | 'ResponseRoom' | 'Icecandidate';
+export type TSignal = 'Offer' | 'Answer' | 'CreateRoom' | 'JoinRoom' | 'ResponseRoom' | 'Icecandidate' | 'ExitRoom';
 
 export interface Signal {
   type: TSignal;

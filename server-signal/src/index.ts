@@ -64,6 +64,10 @@ wss.on('connection', (ws, req) => {
         case "Icecandidate":
           roomMap.get(signal.roomId)?.sendIcecandidate(signal as IcecandidateSignal);
           break;
+        case "ExitRoom":
+          console.log('exitroom!!');
+          
+          break;
         default:
           break;
       }

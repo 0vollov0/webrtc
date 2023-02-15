@@ -28,7 +28,11 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
 
   const exitRoom = () => {
-    signalChannel.current?.close();
+    // signalChannel.current?.close();
+    sendSignal({
+      roomId,
+      type: 'ExitRoom'
+    })
     setRoomId("");
     setStreamMap(new Map());
     if (remotePeerConnectionMap.current) {
@@ -200,11 +204,6 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     return () => {
     }
   }, [onMessage, userId, localStream]);
-
-  useEffect(() => {
-    console.log(streamMap,"??");
-    
-  }, [streamMap]);
 
   return [
     streamMap,
