@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components"
 import { ScreenMode } from "../types";
+import { DeviceState } from "./VideoChat";
 
 export const VideoScreen = styled.video<{screenMode: ScreenMode}>`
   ${({screenMode}) => {
@@ -22,19 +23,27 @@ export const VideoFrame = styled.div`
 
 interface VideoProps {
   screenMode: ScreenMode;
+  deviceState: DeviceState;
   stream?: MediaStream;
 }
 
 export const LocalVideo: React.FC<VideoProps> = ({
   screenMode,
-  stream
+  stream,
+  deviceState
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!videoRef.current || !stream) return;
+    stream.getVideoTracks().forEach((track) => {
+      track.enabled = deviceState.video;
+    })
+    stream.getAudioTracks().forEach((track) => {
+      track.enabled = deviceState.audio;
+    })
     videoRef.current.srcObject = stream;
-  }, [stream]);
+  }, [stream, deviceState]);
 
   return (
     <VideoFrame>

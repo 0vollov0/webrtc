@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { ScreenMode } from "../types";
 import { LocalVideo } from "./LocalVideo";
 import { RemoteVideo } from "./RemoteVideo";
+import { DeviceState } from "./VideoChat";
 
 const StreamsFrame = styled.div`
   display: grid;
@@ -13,13 +14,15 @@ const StreamsFrame = styled.div`
 
 interface StreamsProps {
   remoteStreamMap: Map<string, MediaStream>;
+  deviceState: DeviceState;
   localStream?: MediaStream;
 }
 
 
 export const Streams: React.FC<StreamsProps> = ({
   localStream,
-  remoteStreamMap
+  remoteStreamMap,
+  deviceState
 }) => {
   const [ streamCnt, setStreamCnt] = useState(0);
   const [ screenMode, setScreenMode ] = useState<ScreenMode>('horizontal');
@@ -53,6 +56,7 @@ export const Streams: React.FC<StreamsProps> = ({
       <LocalVideo
         stream={localStream}
         screenMode={screenMode}
+        deviceState={deviceState}
       />
       {
         Array.from(remoteStreamMap).map(([id, stream], index) => (

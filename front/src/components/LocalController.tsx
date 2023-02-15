@@ -2,7 +2,7 @@ import { useState } from "react";
 import styled from "styled-components"
 import { CameraController } from "./controllers/CameraController";
 import { MicController } from "./controllers/MicController";
-import { SelectedDevice } from "./VideoChat";
+import { Device, DeviceState, SelectedDevice } from "./VideoChat";
 
 const LocalControllerFrame = styled.div`
   display: flex;
@@ -17,15 +17,17 @@ const LocalControllerFrame = styled.div`
 
 interface LocalControllerProps {
   onChangeDevice: (device: MediaDeviceInfo) => void;
+  onChangeDeviceState: (type: Device, state: boolean) => void;
+  deviceState: DeviceState;
   selectedDevice?: SelectedDevice;
 }
 
 export const LocalController:React.FC<LocalControllerProps> = ({
   onChangeDevice,
-  selectedDevice
+  selectedDevice,
+  deviceState,
+  onChangeDeviceState
 }) => {
-  const [enableMic, setEnableMic] = useState<boolean>(true);
-  const [enableCamera, setEnableCamera] = useState<boolean>(true);
 
   return (
     <LocalControllerFrame>
@@ -33,15 +35,15 @@ export const LocalController:React.FC<LocalControllerProps> = ({
         kind="audioinput"
         onChangeDevice={onChangeDevice}
         selectedDevice={selectedDevice?.audio}
-        enabled={enableMic}
-        setEnable={(enable) => setEnableMic(enable)}
+        enabled={deviceState.audio}
+        setEnable={(enable) => onChangeDeviceState('audio', enable)}
       />
       <CameraController
         kind="videoinput"
         onChangeDevice={onChangeDevice}
         selectedDevice={selectedDevice?.video}
-        enabled={enableCamera}
-        setEnable={(enable) => setEnableCamera(enable)}
+        enabled={deviceState.video}
+        setEnable={(enable) => onChangeDeviceState('video', enable)}
       />
     </LocalControllerFrame>
   )

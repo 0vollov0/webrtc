@@ -29,11 +29,6 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
     }
   }, []);
 
-  useEffect(() => {
-    console.log(stream?.getVideoTracks(),remoteId,"remote stream");
-    
-  }, [stream, remoteId]);
-
   return (
     <VideoFrame
       ref={frameRef}
@@ -43,7 +38,6 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
         ref={videoRef}
         autoPlay={true}
         controls={false}
-        muted
       />
     </VideoFrame>
   )

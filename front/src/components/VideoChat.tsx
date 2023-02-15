@@ -16,13 +16,24 @@ const VideoChatFrame = styled.div`
   border-radius: 5px;
 `
 
+export type Device = 'audio' | 'video'
+
 export interface SelectedDevice {
   audio?: MediaDeviceInfo;
   video?: MediaDeviceInfo;
 }
 
+export interface DeviceState {
+  audio: boolean;
+  video: boolean;
+}
+
 export const VideoChat: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<SelectedDevice>();
+  const [deviceState, setDeviceState] = useState<DeviceState>({
+    audio: true,
+    video: true,
+  });
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { userId } = useContext(UserContext);
   const [ remoteStreamMap, signalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection(userId, localStream);
@@ -51,15 +62,20 @@ export const VideoChat: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
 
+  const onChangeDeviceState = (type: Device, state: boolean) => {
+    setDeviceState({
+      ...deviceState,
+      [type]: state
+    })
+  }
+
   useEffect(() => {
     if(!selectedDevice) return;
     const constraints: MediaStreamConstraints = {
-      audio: !selectedDevice.audio ? false : {
+      audio: selectedDevice.audio ? {
         deviceId: selectedDevice.audio.deviceId,
         echoCancellation: true,
-      },
-      // local stream should be muted because I don't need listen my voice myself
-      // audio: false,
+      } : false,
       video: !selectedDevice.video ? false : {
         deviceId: selectedDevice.video.deviceId
       },
@@ -72,6 +88,7 @@ export const VideoChat: React.FC = () => {
       <Streams
         remoteStreamMap={remoteStreamMap}
         localStream={localStream}
+        deviceState={deviceState}
       />
       <RoomController
         roomId={roomId}
@@ -83,6 +100,8 @@ export const VideoChat: React.FC = () => {
       <LocalController
         selectedDevice={selectedDevice}
         onChangeDevice={onChangeDevice}
+        onChangeDeviceState={onChangeDeviceState}
+        deviceState={deviceState}
       />
     </VideoChatFrame>
   )
