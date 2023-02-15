@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { Signal, isSignal, AnswerSignal, IcecandidateSignal, OfferSignal } from 'common';
+import { Signal, isSignal, AnswerSignal, IcecandidateSignal, OfferSignal, ExitRoomSignal } from 'common';
 import { IncomingMessage } from 'http';
 import ChatRoom from './Room/ChatRoom';
 import BreakRoom from './Room/BreakRoom';
@@ -31,6 +31,11 @@ const onClose = (ws: WebSocket.WebSocket) => {
   }
 }
 
+const onExistRoom = (ws: WebSocket.WebSocket, userId: string, signal: ExitRoomSignal) => {
+  roomMap.get(signal.roomId)?.exit(ws);
+  breakRoom.join(ws, userId);
+}
+
 const roomCleaner = (id: string) => {
   roomMap.delete(id);
 }
@@ -45,7 +50,7 @@ wss.on('connection', (ws, req) => {
     try {
       const signal: Signal= JSON.parse(dataString);
       if (!isSignal(signal)) throw new Error("the data received isn't signal type");
-      console.log(signal.type);
+      // console.log(signal.type);
       
       switch (signal.type) {
         case "CreateRoom":
@@ -65,8 +70,7 @@ wss.on('connection', (ws, req) => {
           roomMap.get(signal.roomId)?.sendIcecandidate(signal as IcecandidateSignal);
           break;
         case "ExitRoom":
-          console.log('exitroom!!');
-          
+          onExistRoom(ws, userId, signal as ExitRoomSignal);
           break;
         default:
           break;

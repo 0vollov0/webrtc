@@ -35,3 +35,7 @@ export interface IcecandidateSignal extends Omit<Signal, 'data'> {
   receiver: string;
   data?: RTCIceCandidate;
 }
+
+export interface ExitRoomSignal extends Omit<Signal,'data'> {
+  type: 'ExitRoom';
+}
