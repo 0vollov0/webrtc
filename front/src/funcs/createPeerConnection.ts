@@ -15,6 +15,7 @@ export interface CreatePeerConnectionProps {
   receiver: string;
   onTrack: (userId: string, stream: MediaStream) => void;
   onDisconnect: (userId: string) => void;
+  onDataChannel: (event: RTCDataChannelEvent) => void;
 }
 
 
@@ -24,9 +25,11 @@ export const createPeerConnection = ({
   receiver,
   roomId,
   sender,
-  signalingChannel
+  signalingChannel,
+  onDataChannel
 }:CreatePeerConnectionProps) => {
   const peerConnection = new RTCPeerConnection(RTCConfiguration);
+
   peerConnection.addEventListener('icecandidate', (event) => {
     if (event.candidate) {
       const signal: IcecandidateSignal = {
@@ -53,6 +56,8 @@ export const createPeerConnection = ({
     const [remoteStream] = event.streams;
     onTrack(receiver, remoteStream);
   })
+
+  peerConnection.addEventListener('datachannel', onDataChannel)
 
   return peerConnection;
 }

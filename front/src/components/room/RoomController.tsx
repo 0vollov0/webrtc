@@ -35,7 +35,6 @@ const ButtonFrames = styled.div`
 
 
 export interface RoomControllerProps {
-  signalChannel?: WebSocket;
   roomId: string;
   createRoom: TCreateRoom;
   joinRoom: TJoinRoom;
@@ -44,7 +43,6 @@ export interface RoomControllerProps {
 
 export const RoomController:React.FC<RoomControllerProps> = ({
   roomId,
-  signalChannel,
   createRoom,
   joinRoom,
   disconnect

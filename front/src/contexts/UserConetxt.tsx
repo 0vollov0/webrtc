@@ -12,7 +12,7 @@ export const UserContext = createContext<UserContextProps>({
 export const UserProvider = ({ children }: {
   children: JSX.Element | JSX.Element[]
 }): JSX.Element => {
-  const userId = useRef<string>(nanoid());
+  const userId = useRef<string>(nanoid().slice(0,5));
 
   return (
     <UserContext.Provider

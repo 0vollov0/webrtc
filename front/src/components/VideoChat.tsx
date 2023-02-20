@@ -5,6 +5,7 @@ import { usePeerConnection } from "../hooks/usePeerConnection";
 import { LocalController } from "./LocalController";
 import { RoomController } from "./room/RoomController";
 import { Streams } from "./Streams";
+import { addResponseMessage, Widget } from 'react-chat-widget';
 
 const VideoChatFrame = styled.div`
   width: 100%;
@@ -36,7 +37,8 @@ export const VideoChat: React.FC = () => {
   });
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { userId } = useContext(UserContext);
-  const [ remoteStreamMap, signalChannel, roomId, createRoom, joinRoom, disconnect ] = usePeerConnection(userId, localStream);
+  const [ remoteStreamMap, roomId, createRoom, joinRoom, disconnect, dataChannel, remoteDataChannel ] = usePeerConnection(userId, localStream);
+  const [enableChat, setEnableChat] = useState<boolean>(false);
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -69,6 +71,27 @@ export const VideoChat: React.FC = () => {
     })
   }
 
+  const handleNewUserMessage = (newMessage: string) => {
+    remoteDataChannel.current.forEach((remoteDataChannel) => {
+      remoteDataChannel.send(`${userId}:\n${newMessage}`);
+    })
+  };
+
+  const onMessage = (event: MessageEvent<any>) => {
+    addResponseMessage(event.data);
+  }
+
+  const onOpen = () => {
+    console.log('onOpen')
+    setEnableChat(true);
+  }
+
+  const onClose = (event: Event) => {
+    console.log(event);
+    setEnableChat(false);
+  }
+
+
   useEffect(() => {
     if(!selectedDevice) return;
     const constraints: MediaStreamConstraints = {
@@ -83,6 +106,19 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
+  useEffect(() => {
+    if (dataChannel) {
+      dataChannel.addEventListener('message', onMessage);
+      dataChannel.addEventListener('open', onOpen);
+      dataChannel.addEventListener('close', onClose);
+    }
+    return () => {
+      dataChannel?.removeEventListener('message', onMessage);
+      dataChannel?.removeEventListener('open', onOpen);
+      dataChannel?.removeEventListener('close', onClose);
+    }
+  },[dataChannel, onMessage, onOpen, onClose])
+
   return (
     <VideoChatFrame>
       <Streams
@@ -92,7 +128,6 @@ export const VideoChat: React.FC = () => {
       />
       <RoomController
         roomId={roomId}
-        signalChannel={signalChannel}
         createRoom={createRoom}
         joinRoom={joinRoom}
         disconnect={disconnect}
@@ -103,6 +138,17 @@ export const VideoChat: React.FC = () => {
         onChangeDeviceState={onChangeDeviceState}
         deviceState={deviceState}
       />
+      {
+        enableChat
+        ? (
+          <Widget
+            title="webrtc"
+            subtitle="this chat is using datachnnel"
+            handleNewUserMessage={handleNewUserMessage}
+            emojis={true}
+          />
+        ) : <></>
+      }
     </VideoChatFrame>
   )
 }

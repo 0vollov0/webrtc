@@ -10,11 +10,12 @@ export type TDisconnect = () => void;
 
 type UsePeerConnectionReturn = ReturnType<() => [
   Map<string, MediaStream>,
-  WebSocket | undefined,
   string,
   TCreateRoom,
   TJoinRoom,
-  TDisconnect
+  TDisconnect,
+  RTCDataChannel | undefined,
+  React.MutableRefObject<Map<string, RTCDataChannel>>
 ]>;
 
 // const RTCConfiguration: RTCConfiguration = {
@@ -26,6 +27,8 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
   const [roomId, setRoomId] = useState<string>("");
   const [streamMap, setStreamMap] = useState<Map<string, MediaStream>>(new Map());
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const [dataChannel, setDataChannel] = useState<RTCDataChannel>();
+  const remoteDataChannel = useRef<Map<string, RTCDataChannel>>(new Map());
 
   const sendSignal = (signal: Signal) => {
     const encode = JSON.stringify(signal);
@@ -46,6 +49,11 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     })
   }
 
+  const onDataChannel = (event: RTCDataChannelEvent) => {
+    const dataChannel = event.channel;
+    remoteDataChannel.current.set(dataChannel.label, dataChannel);
+  }
+
   const creteOffer = (roomId: string, receiver: string, callback: (roomId: string, receiver: string, offer: RTCSessionDescriptionInit) => void) => {
     if(!signalChannel.current) return;
     const peerConnection = createPeerConnection({
@@ -54,8 +62,10 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       signalingChannel: signalChannel.current,
       roomId,
       sender: userId,
-      receiver
+      receiver,
+      onDataChannel
     });
+    setDataChannel(peerConnection.createDataChannel(userId));
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -101,7 +111,9 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       sender: userId,
       onTrack,
       onDisconnect,
+      onDataChannel
     });
+    setDataChannel(peerConnection.createDataChannel(userId));
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -210,10 +222,11 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
 
   return [
     streamMap,
-    signalChannel.current,
     roomId,
     createRoom,
     joinRoom,
-    exitRoom
+    exitRoom,
+    dataChannel,
+    remoteDataChannel
   ];
 }

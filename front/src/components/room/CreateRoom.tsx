@@ -14,10 +14,9 @@ const CreateRoomFrame = styled.div`
   justify-content: center;
 `
 
-interface CreateRoomProps extends Pick<RoomControllerProps, 'signalChannel' | 'createRoom'> {}
+interface CreateRoomProps extends Pick<RoomControllerProps, 'createRoom'> {}
 
 export const CreateRoom: React.FC<CreateRoomProps> = ({
-  signalChannel,
   createRoom,
 }) => {
   const [ input, onInput ] = useInput();
