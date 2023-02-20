@@ -27,21 +27,6 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
   const [streamMap, setStreamMap] = useState<Map<string, MediaStream>>(new Map());
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
 
-  const exitRoom = () => {
-    // signalChannel.current?.close();
-    sendSignal({
-      roomId,
-      type: 'ExitRoom'
-    })
-    setRoomId("");
-    setStreamMap(new Map());
-    if (remotePeerConnectionMap.current) {
-      remotePeerConnectionMap.current.forEach((peer) => {
-        peer.close();
-      })
-    }
-  }
-
   const sendSignal = (signal: Signal) => {
     const encode = JSON.stringify(signal);
     signalChannel.current?.send(encode);
@@ -172,39 +157,56 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     }
   }
 
-  const createRoom = (roomId: string) => {
-    console.log("create Room");
-    
-    const signal: Signal = {
-      roomId,
-      type: 'CreateRoom'
-    }
-    sendSignal(signal)
-  }
-
-  const joinRoom = (roomId: string) => {
-    const signal: Signal = {
-      roomId,
-      type: 'JoinRoom'
-    }
-    sendSignal(signal)
-  }
-
-
-  useEffect(() => {
-    if (!localStream) return;
+  const connectSignalServer = (onopen: () => void) => {
     if (signalChannel.current) return;
-    let ws: WebSocket;
     try {
-      ws = new WebSocket(`${config.signalHost}?userId=${userId}`);
+      const ws = new WebSocket(`${config.signalHost}?userId=${userId}`);
       ws.addEventListener('message',onMessage);
+      ws.onopen = onopen;
+      ws.onclose = () => {
+        ws.removeEventListener('message',onMessage);
+      }
       signalChannel.current = ws;
     } catch (error) {
       console.error(error);
     }
-    return () => {
+  }
+
+  const createRoom = (roomId: string) => {
+    connectSignalServer(() => {
+      const signal: Signal = {
+        roomId,
+        type: 'CreateRoom'
+      }
+      sendSignal(signal)
+    })
+  }
+
+  const joinRoom = (roomId: string) => {
+    connectSignalServer(() => {
+      const signal: Signal = {
+        roomId,
+        type: 'JoinRoom'
+      }
+      sendSignal(signal)
+    })
+  }
+
+  const exitRoom = () => {
+    sendSignal({
+      roomId,
+      type: 'ExitRoom'
+    });
+    setRoomId("");
+    setStreamMap(new Map());
+    if (remotePeerConnectionMap.current) {
+      remotePeerConnectionMap.current.forEach((peer) => {
+        peer.close();
+      })
     }
-  }, [onMessage, userId, localStream]);
+    signalChannel.current?.close();
+    signalChannel.current = undefined;
+  }
 
   return [
     streamMap,
