@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Signal, AnswerSignal, OfferSignal, ResponseRoomSignal, IcecandidateSignal } from 'common';
 import { config } from "../config";
 import { createPeerConnection } from "../funcs/createPeerConnection";
@@ -14,23 +14,23 @@ type UsePeerConnectionReturn = ReturnType<() => [
   TCreateRoom,
   TJoinRoom,
   TDisconnect,
-  RTCDataChannel | undefined,
-  React.MutableRefObject<Map<string, RTCDataChannel>>,
   React.MutableRefObject<Map<string, RTCDataChannel>>
 ]>;
 
-// const RTCConfiguration: RTCConfiguration = {
-//   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
-// }
 
 export const usePeerConnection = (userId: string, onDataChannelMessage: (event: MessageEvent<any>) => void, localStream?: MediaStream): UsePeerConnectionReturn => {
   const signalChannel = useRef<WebSocket>();
   const [roomId, setRoomId] = useState<string>("");
   const [streamMap, setStreamMap] = useState<Map<string, MediaStream>>(new Map());
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
-  const [dataChannel, setDataChannel] = useState<RTCDataChannel>();
   const dataChannels = useRef<Map<string, RTCDataChannel>>(new Map());
   const remoteDataChannel = useRef<Map<string, RTCDataChannel>>(new Map());
+
+  const setUpDataChannel = (peerConnection: RTCPeerConnection) => {
+    const dataChannel = peerConnection.createDataChannel(userId);
+    dataChannels.current.set(dataChannel.label,dataChannel);
+    dataChannel.addEventListener('message',onDataChannelMessage);
+  }
 
   const sendSignal = (signal: Signal) => {
     const encode = JSON.stringify(signal);
@@ -53,9 +53,6 @@ export const usePeerConnection = (userId: string, onDataChannelMessage: (event: 
 
   const onDataChannel = (event: RTCDataChannelEvent) => {
     const dataChannel = event.channel;
-    dataChannel.addEventListener('message',(ev) => {
-      console.log(dataChannel.label,ev.data);
-    })
     remoteDataChannel.current.set(dataChannel.label, dataChannel);
   }
 
@@ -70,12 +67,8 @@ export const usePeerConnection = (userId: string, onDataChannelMessage: (event: 
       receiver,
       onDataChannel
     });
-    const newDataChannel = peerConnection.createDataChannel(userId);
-    dataChannels.current.set(newDataChannel.label,newDataChannel);
-    newDataChannel.addEventListener('message',onDataChannelMessage);
-    if (!dataChannel) {
-      setDataChannel(newDataChannel);
-    }
+    setUpDataChannel(peerConnection);
+
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -123,12 +116,8 @@ export const usePeerConnection = (userId: string, onDataChannelMessage: (event: 
       onDisconnect,
       onDataChannel
     });
-    const newDataChannel = peerConnection.createDataChannel(userId);
-    newDataChannel.addEventListener('message',onDataChannelMessage);
-    dataChannels.current.set(newDataChannel.label,newDataChannel);
-    if (!dataChannel) {
-      setDataChannel(newDataChannel);
-    }
+    setUpDataChannel(peerConnection);
+
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -241,8 +230,6 @@ export const usePeerConnection = (userId: string, onDataChannelMessage: (event: 
     createRoom,
     joinRoom,
     exitRoom,
-    dataChannel,
-    dataChannels,
     remoteDataChannel
   ];
 }

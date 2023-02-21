@@ -30,10 +30,6 @@ export interface DeviceState {
 }
 
 export const VideoChat: React.FC = () => {
-  const onMessage = (event: MessageEvent<any>) => {
-    addResponseMessage(event.data);
-  }
-
   const [selectedDevice, setSelectedDevice] = useState<SelectedDevice>();
   const [deviceState, setDeviceState] = useState<DeviceState>({
     audio: true,
@@ -41,8 +37,14 @@ export const VideoChat: React.FC = () => {
   });
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { userId } = useContext(UserContext);
-  const [ remoteStreamMap, roomId, createRoom, joinRoom, disconnect, dataChannel, dataChannels, remoteDataChannel ] = usePeerConnection(userId, onMessage, localStream);
-  const [enableChat, setEnableChat] = useState<boolean>(true);
+  const [
+    remoteStreamMap,
+    roomId,
+    createRoom,
+    joinRoom,
+    disconnect,
+    remoteDataChannel
+  ] = usePeerConnection(userId, (event: MessageEvent<any>) => addResponseMessage(event.data), localStream);
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -77,19 +79,9 @@ export const VideoChat: React.FC = () => {
 
   const handleNewUserMessage = (newMessage: string) => {
     remoteDataChannel.current.forEach((remoteDataChannel) => {
-      console.log('??',remoteDataChannel.readyState)
       remoteDataChannel.send(`${userId}:\n${newMessage}`);
     })
   };
-
-  const onOpen = () => {
-    setEnableChat(true);
-  }
-
-  const onClose = (event: Event) => {
-    setEnableChat(false);
-  }
-
 
   useEffect(() => {
     if(!selectedDevice) return;
@@ -104,19 +96,6 @@ export const VideoChat: React.FC = () => {
     }
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
-
-  // useEffect(() => {
-  //   if (dataChannel) {
-  //     dataChannel.addEventListener('message', onMessage);
-  //     dataChannel.addEventListener('open', onOpen);
-  //     dataChannel.addEventListener('close', onClose);
-  //   }
-  //   return () => {
-  //     dataChannel?.removeEventListener('message', onMessage);
-  //     dataChannel?.removeEventListener('open', onOpen);
-  //     dataChannel?.removeEventListener('close', onClose);
-  //   }
-  // },[dataChannel, onMessage, onOpen, onClose])
 
   return (
     <VideoChatFrame>
@@ -138,7 +117,7 @@ export const VideoChat: React.FC = () => {
         deviceState={deviceState}
       />
       {
-        enableChat
+        roomId.length
         ? (
           <Widget
             title="webrtc"
