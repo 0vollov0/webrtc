@@ -30,6 +30,10 @@ export interface DeviceState {
 }
 
 export const VideoChat: React.FC = () => {
+  const onMessage = (event: MessageEvent<any>) => {
+    addResponseMessage(event.data);
+  }
+
   const [selectedDevice, setSelectedDevice] = useState<SelectedDevice>();
   const [deviceState, setDeviceState] = useState<DeviceState>({
     audio: true,
@@ -37,8 +41,8 @@ export const VideoChat: React.FC = () => {
   });
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { userId } = useContext(UserContext);
-  const [ remoteStreamMap, roomId, createRoom, joinRoom, disconnect, dataChannel, remoteDataChannel ] = usePeerConnection(userId, localStream);
-  const [enableChat, setEnableChat] = useState<boolean>(false);
+  const [ remoteStreamMap, roomId, createRoom, joinRoom, disconnect, dataChannel, dataChannels, remoteDataChannel ] = usePeerConnection(userId, onMessage, localStream);
+  const [enableChat, setEnableChat] = useState<boolean>(true);
 
   const onChangeDevice = useCallback((device: MediaDeviceInfo) => {
     switch (device.kind) {
@@ -73,21 +77,16 @@ export const VideoChat: React.FC = () => {
 
   const handleNewUserMessage = (newMessage: string) => {
     remoteDataChannel.current.forEach((remoteDataChannel) => {
+      console.log('??',remoteDataChannel.readyState)
       remoteDataChannel.send(`${userId}:\n${newMessage}`);
     })
   };
 
-  const onMessage = (event: MessageEvent<any>) => {
-    addResponseMessage(event.data);
-  }
-
   const onOpen = () => {
-    console.log('onOpen')
     setEnableChat(true);
   }
 
   const onClose = (event: Event) => {
-    console.log(event);
     setEnableChat(false);
   }
 
@@ -106,18 +105,18 @@ export const VideoChat: React.FC = () => {
     navigator.mediaDevices.getUserMedia(constraints).then(setLocalStream);
   },[selectedDevice])
 
-  useEffect(() => {
-    if (dataChannel) {
-      dataChannel.addEventListener('message', onMessage);
-      dataChannel.addEventListener('open', onOpen);
-      dataChannel.addEventListener('close', onClose);
-    }
-    return () => {
-      dataChannel?.removeEventListener('message', onMessage);
-      dataChannel?.removeEventListener('open', onOpen);
-      dataChannel?.removeEventListener('close', onClose);
-    }
-  },[dataChannel, onMessage, onOpen, onClose])
+  // useEffect(() => {
+  //   if (dataChannel) {
+  //     dataChannel.addEventListener('message', onMessage);
+  //     dataChannel.addEventListener('open', onOpen);
+  //     dataChannel.addEventListener('close', onClose);
+  //   }
+  //   return () => {
+  //     dataChannel?.removeEventListener('message', onMessage);
+  //     dataChannel?.removeEventListener('open', onOpen);
+  //     dataChannel?.removeEventListener('close', onClose);
+  //   }
+  // },[dataChannel, onMessage, onOpen, onClose])
 
   return (
     <VideoChatFrame>

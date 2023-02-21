@@ -15,6 +15,7 @@ type UsePeerConnectionReturn = ReturnType<() => [
   TJoinRoom,
   TDisconnect,
   RTCDataChannel | undefined,
+  React.MutableRefObject<Map<string, RTCDataChannel>>,
   React.MutableRefObject<Map<string, RTCDataChannel>>
 ]>;
 
@@ -22,12 +23,13 @@ type UsePeerConnectionReturn = ReturnType<() => [
 //   iceServers: [{'urls': 'stun:stun.l.google.com:19302'}]
 // }
 
-export const usePeerConnection = (userId: string, localStream?: MediaStream): UsePeerConnectionReturn => {
+export const usePeerConnection = (userId: string, onDataChannelMessage: (event: MessageEvent<any>) => void, localStream?: MediaStream): UsePeerConnectionReturn => {
   const signalChannel = useRef<WebSocket>();
   const [roomId, setRoomId] = useState<string>("");
   const [streamMap, setStreamMap] = useState<Map<string, MediaStream>>(new Map());
   const remotePeerConnectionMap = useRef<Map<string, RTCPeerConnection>>(new Map());
   const [dataChannel, setDataChannel] = useState<RTCDataChannel>();
+  const dataChannels = useRef<Map<string, RTCDataChannel>>(new Map());
   const remoteDataChannel = useRef<Map<string, RTCDataChannel>>(new Map());
 
   const sendSignal = (signal: Signal) => {
@@ -51,6 +53,9 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
 
   const onDataChannel = (event: RTCDataChannelEvent) => {
     const dataChannel = event.channel;
+    dataChannel.addEventListener('message',(ev) => {
+      console.log(dataChannel.label,ev.data);
+    })
     remoteDataChannel.current.set(dataChannel.label, dataChannel);
   }
 
@@ -65,7 +70,12 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       receiver,
       onDataChannel
     });
-    setDataChannel(peerConnection.createDataChannel(userId));
+    const newDataChannel = peerConnection.createDataChannel(userId);
+    dataChannels.current.set(newDataChannel.label,newDataChannel);
+    newDataChannel.addEventListener('message',onDataChannelMessage);
+    if (!dataChannel) {
+      setDataChannel(newDataChannel);
+    }
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -113,7 +123,12 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
       onDisconnect,
       onDataChannel
     });
-    setDataChannel(peerConnection.createDataChannel(userId));
+    const newDataChannel = peerConnection.createDataChannel(userId);
+    newDataChannel.addEventListener('message',onDataChannelMessage);
+    dataChannels.current.set(newDataChannel.label,newDataChannel);
+    if (!dataChannel) {
+      setDataChannel(newDataChannel);
+    }
     localStream?.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
@@ -227,6 +242,7 @@ export const usePeerConnection = (userId: string, localStream?: MediaStream): Us
     joinRoom,
     exitRoom,
     dataChannel,
+    dataChannels,
     remoteDataChannel
   ];
 }
