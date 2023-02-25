@@ -2,6 +2,7 @@ FROM node:16.15.0
 
 WORKDIR /home/ubuntu/app
 
+
 COPY package.json .
 COPY common ./common
 COPY front ./front
@@ -10,8 +11,8 @@ RUN yarn install
 
 WORKDIR /home/ubuntu/app/front
 
-# RUN npm install --location=global http-server
+RUN npm install -g http-server
 RUN yarn build
+EXPOSE 3000
 
-# EXPOSE 3000
-# ENTRYPOINT ["http-server", "-c-1", "-p", "3000", "build"]
+ENTRYPOINT [ "http-server", "-c-1", "-p", "3000", "build" ]
