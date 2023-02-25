@@ -1,4 +1,4 @@
 {
   "private": true,
-  "workspaces": ["front", "server-signal", "common"]
+  "workspaces": ["front", "signal-server", "common"]
 }

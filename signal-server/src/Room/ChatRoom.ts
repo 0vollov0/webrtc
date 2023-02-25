@@ -1,5 +1,5 @@
 import { Signal, AnswerSignal, OfferSignal, ResponseRoomSignal, IcecandidateSignal } from 'common';
-import WebSocket, { WebSocketServer } from 'ws';
+import WebSocket from 'ws';
 import { Room } from './Room';
 
 export interface ChatRoom extends Room {
@@ -36,7 +36,6 @@ export default class implements ChatRoom {
   }
 
   sendResponse(ws: WebSocket.WebSocket) {
-    console.log("sendResponse");
     const signal: ResponseRoomSignal = {
       type: 'ResponseRoom',
       roomId: this.id,

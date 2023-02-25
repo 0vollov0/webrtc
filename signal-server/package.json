@@ -1,5 +1,5 @@
 {
-  "name": "server-signal",
+  "name": "signal-server",
   "version": "1.0.0",
   "description": "this is signal server that help before peer connected",
   "main": "src/index.ts",
@@ -8,7 +8,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "build": "tsc --build",
+    "start": "node buid/index.js"
   },
   "dependencies": {
     "js-base64": "^3.7.3",
