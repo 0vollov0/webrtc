@@ -2,9 +2,9 @@ import WebSocket, { WebSocketServer } from 'ws';
 import { Signal, isSignal, AnswerSignal, IcecandidateSignal, OfferSignal, ExitRoomSignal } from 'common';
 import { IncomingMessage } from 'http';
 import ChatRoom from './Room/ChatRoom';
-import BreakRoom from './Room/BreakRoom';
+import RestRoom from './Room/RestRoom';
 
-const breakRoom = new BreakRoom();
+const restRoom = new RestRoom();
 const roomMap = new Map<string, ChatRoom>();
 
 const wss = new WebSocketServer({
@@ -20,7 +20,7 @@ const getUserId = (req: IncomingMessage) => {
 
 const onClose = (ws: WebSocket.WebSocket) => {
   console.log("onClose");
-  const result = breakRoom.exit(ws);
+  const result = restRoom.exit(ws);
   if (result) return;
   const rooms = Array.from(roomMap.values());
   for (const id in rooms) {
@@ -33,7 +33,7 @@ const onClose = (ws: WebSocket.WebSocket) => {
 
 const onExistRoom = (ws: WebSocket.WebSocket, userId: string, signal: ExitRoomSignal) => {
   roomMap.get(signal.roomId)?.exit(ws);
-  breakRoom.join(ws, userId);
+  restRoom.join(ws, userId);
 }
 
 const roomCleaner = (id: string) => {
@@ -43,7 +43,7 @@ const roomCleaner = (id: string) => {
 wss.on('connection', (ws, req) => {
   const userId = getUserId(req);
   if (!userId) return;
-  breakRoom.join(ws, userId);
+  restRoom.join(ws, userId);
 
   ws.on('message',(data, isBinary) => {
     const dataString = data.toString();
@@ -55,10 +55,10 @@ wss.on('connection', (ws, req) => {
       switch (signal.type) {
         case "CreateRoom":
           roomMap.set(signal.roomId, new ChatRoom(signal.roomId, roomCleaner));
-          breakRoom.migrate(ws, roomMap.get(signal.roomId));
+          restRoom.migrate(ws, roomMap.get(signal.roomId));
           break;
         case "JoinRoom":
-          breakRoom.migrate(ws, roomMap.get(signal.roomId));
+          restRoom.migrate(ws, roomMap.get(signal.roomId));
           break;
         case "Offer":
           roomMap.get(signal.roomId)?.sendOffer(signal as OfferSignal);
