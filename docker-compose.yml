@@ -10,9 +10,9 @@ services:
     volumes:
       - /home/ubuntu/app/front/build:/home/ubuntu/app/front/build
   
-  # admin:
-  #   build:
-  #     context: .
-  #     dockerfile: packages/admin/dockerfile
-  #   ports:
-  #     - 3001:3001
+  webrtc-server:
+    build: 
+      context: .
+      dockerfile: signal-server/dockerfile
+    ports:
+      - 8080:8080

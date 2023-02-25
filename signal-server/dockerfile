@@ -10,8 +10,5 @@ RUN yarn install
 
 WORKDIR /home/ubuntu/app/signal-server
 
-# RUN npm install --location=global http-server
-RUN yarn build
-
-# EXPOSE 3000
-# ENTRYPOINT ["http-server", "-c-1", "-p", "3000", "build"]
+EXPOSE 8080
+ENTRYPOINT ["yarn", "start"]
