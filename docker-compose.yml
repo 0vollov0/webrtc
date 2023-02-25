@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  webrtc-front:
+    build:
+      context: .
+      dockerfile: front/dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - /home/ubuntu/app/front/build:/home/ubuntu/app/front/build
+  
+  # admin:
+  #   build:
+  #     context: .
+  #     dockerfile: packages/admin/dockerfile
+  #   ports:
+  #     - 3001:3001
