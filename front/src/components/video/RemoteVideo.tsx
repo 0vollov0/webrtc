@@ -1,30 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { VideoFrame, VideoScreen } from "./LocalVideo";
+import { VideoFrame, VideoScreen, VideoScreenProps } from "./styles/vidoe-style";
 
 interface RemoteVideoProps {
-  remoteId: string;
   stream?: MediaStream;
 }
 
 export const RemoteVideo: React.FC<RemoteVideoProps> = ({
-  remoteId,
   stream
 }) => {
   const videoFrameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoFrameSize, setVideoFrameSize] = useState<{
-    width: number,
-    height: number
-  }>({
+  const [videoScreenProps, setVideoScreenProps] = useState<VideoScreenProps>({
     width: 0,
-    height: 0
+    aspectRatio: 0
   })
 
   const onResize = () => {
     if (!videoFrameRef.current) return;
-    setVideoFrameSize({
-      width: videoFrameRef.current?.clientWidth * 0.95,
-      height: videoFrameRef.current?.clientHeight * 0.95
+    const width = videoFrameRef.current.clientWidth * 0.95;
+    const height = videoFrameRef.current.clientHeight * 0.95
+    setVideoScreenProps({
+      width,
+      aspectRatio: width / height
     })
   }
 
@@ -32,10 +29,6 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
     if (!videoRef.current || !stream) return;
     videoRef.current.srcObject = stream;
   }, [stream]);
-
-  // useEffect(() => {
-  //   onResize();
-  // },[streamCnt])
 
   useEffect(() => {
     onResize();
@@ -46,12 +39,10 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
   },[onResize])
 
   return (
-    <VideoFrame
-      ref={videoFrameRef}
-    >
+    <VideoFrame ref={videoFrameRef}>
       <VideoScreen
-        width={videoFrameSize.width}
-        aspectRatio={videoFrameSize.width/videoFrameSize.height}
+        width={videoScreenProps.width}
+        aspectRatio={videoScreenProps.aspectRatio}
         ref={videoRef}
         autoPlay={true}
         controls={false}

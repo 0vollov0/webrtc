@@ -4,7 +4,7 @@ import { UserContext } from "../contexts/UserConetxt";
 import { usePeerConnection } from "../hooks/usePeerConnection";
 import { LocalController } from "./LocalController";
 import { RoomController } from "./room/RoomController";
-import { Streams } from "./Streams";
+import { VideoChatRoom } from "./VideoChatRoom";
 import { addResponseMessage, Widget } from 'react-chat-widget';
 
 const VideoChatFrame = styled.div`
@@ -99,7 +99,7 @@ export const VideoChat: React.FC = () => {
 
   return (
     <VideoChatFrame>
-      <Streams
+      <VideoChatRoom
         remoteStreamMap={remoteStreamMap}
         localStream={localStream}
         deviceState={deviceState}
