@@ -3,11 +3,14 @@ import styled from "styled-components"
 import { ScreenMode } from "../types";
 import { DeviceState } from "./VideoChat";
 
-export const VideoScreen = styled.video<{screenMode: ScreenMode}>`
-  ${({screenMode}) => {
-    if (screenMode === 'horizontal') return `width: 100%;`
-    else return `height: 100%;`
-  }}
+interface VideoScreenProps {
+  width: number;
+  aspectRatio: number;
+}
+
+export const VideoScreen = styled.video<VideoScreenProps>`
+  width: calc(${({width}) => width}px * 0.95);
+  aspect-ratio: ${({aspectRatio}) => aspectRatio};
   object-fit: fill;
   border-radius: 2.5px;
 `
@@ -22,17 +25,31 @@ export const VideoFrame = styled.div`
 `
 
 interface VideoProps {
-  screenMode: ScreenMode;
   deviceState: DeviceState;
   stream?: MediaStream;
 }
 
 export const LocalVideo: React.FC<VideoProps> = ({
-  screenMode,
+  deviceState,
   stream,
-  deviceState
 }) => {
+  const videoFrameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoFrameSize, setVideoFrameSize] = useState<{
+    width: number,
+    height: number
+  }>({
+    width: 0,
+    height: 0
+  })
+
+  const onResize = () => {
+    if (!videoFrameRef.current) return;
+    setVideoFrameSize({
+      width: videoFrameRef.current?.clientWidth * 0.95,
+      height: videoFrameRef.current?.clientHeight * 0.95
+    })
+  }
 
   useEffect(() => {
     if (!videoRef.current || !stream) return;
@@ -45,10 +62,20 @@ export const LocalVideo: React.FC<VideoProps> = ({
     videoRef.current.srcObject = stream;
   }, [stream, deviceState]);
 
+  useEffect(() => {
+    onResize();
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+    }
+  },[onResize])
+
   return (
-    <VideoFrame>
+    <VideoFrame ref={videoFrameRef}>
       <VideoScreen
-        screenMode={screenMode}
+        // screenMode={screenMode}
+        width={videoFrameSize.width}
+        aspectRatio={videoFrameSize.width/videoFrameSize.height}
         ref={videoRef}
         autoPlay={true}
         controls={false}
