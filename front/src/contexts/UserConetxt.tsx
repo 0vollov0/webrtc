@@ -1,5 +1,4 @@
 import { createContext, useRef } from "react";
-import { nanoid } from 'nanoid'
 
 interface UserContextProps {
   userId: string;
@@ -12,7 +11,7 @@ export const UserContext = createContext<UserContextProps>({
 export const UserProvider = ({ children }: {
   children: JSX.Element | JSX.Element[]
 }): JSX.Element => {
-  const userId = useRef<string>(nanoid().slice(0,5));
+  const userId = useRef<string>(`user-${Math.random().toString().slice(2,5)}`);
 
   return (
     <UserContext.Provider
