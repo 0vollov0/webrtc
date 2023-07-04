@@ -17,7 +17,7 @@ root
 
 ## How to run
 
-install dependecies in root
+install dependencies in root
 ```
 npm or yarn install
 ```
