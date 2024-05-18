@@ -6,10 +6,12 @@ const signal = socket;
 
 export interface SocketState {
   connected: boolean;
+  clientId: string;
 }
 
 const initialState: SocketState = {
   connected: false,
+  clientId: '',
 }
 
 export const signalSlice = createSlice({
@@ -21,9 +23,12 @@ export const signalSlice = createSlice({
     },
     setConnectStatus: (state, action: PayloadAction<boolean>) => {
       state.connected = action.payload;
+    },
+    updateClientId: (state, action: PayloadAction<string>) => {
+      state.clientId = action.payload;
     }
   }
 })
 
-export const { offerSignal, setConnectStatus } = signalSlice.actions;
+export const { offerSignal, setConnectStatus, updateClientId } = signalSlice.actions;
 export default signalSlice.reducer;

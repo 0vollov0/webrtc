@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { JoinRoomDto } from './dto/join-room.dto';
 import { ExitRoomDto } from './dto/exit-room.dto';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class RoomService {
@@ -11,21 +12,22 @@ export class RoomService {
     this.rooms = new Map<string, Set<string>>();
   }
 
-  create({ name }: CreateRoomDto, clientId: string) {
+  create({ name }: CreateRoomDto, client: Socket) {
     if (this.rooms.has(name)) return false;
-    this.rooms.set(name, new Set(clientId));
-    return true;
+    this.rooms.set(name, new Set(client.id));
+    return client.emit('create', true);
   }
 
-  join({ name }: JoinRoomDto, clientId: string) {
+  join({ name }: JoinRoomDto, client: Socket) {
     if (!this.rooms.has(name)) return false;
-    if (this.rooms.get(name).has(clientId)) return false;
-    this.rooms.get(name).add(clientId);
-    return true;
+    if (this.rooms.get(name).has(client.id)) return false;
+    this.rooms.get(name).add(client.id);
+    return client.emit('join', true);
   }
 
-  exit({ name }: ExitRoomDto, clientId: string) {
+  exit({ name }: ExitRoomDto, client: Socket) {
     if (!this.rooms.has(name)) return false;
-    return this.rooms.get(name).delete(clientId);
+    this.rooms.get(name).delete(client.id);
+    return client.emit('exit', true);
   }
 }

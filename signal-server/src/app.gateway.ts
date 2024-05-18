@@ -51,6 +51,7 @@ export class AppGateway
     if (this.clients.has(client.id)) client.disconnect(true);
     else {
       this.clients.set(client.id, client);
+      client.emit('client_id', client.id);
     }
   }
 
@@ -66,7 +67,7 @@ export class AppGateway
     @MessageBody(CreateRoomValidation) dto: CreateRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    if (!this.roomService.create(dto, client.id))
+    if (!this.roomService.create(dto, client))
       throw new WsException('create room failed');
   }
 
@@ -76,7 +77,7 @@ export class AppGateway
     @MessageBody(JoinRoomValidation) dto: JoinRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    if (!this.roomService.join(dto, client.id))
+    if (!this.roomService.join(dto, client))
       throw new WsException('create room failed');
   }
 
@@ -86,7 +87,7 @@ export class AppGateway
     @MessageBody(ExitRoomValidation) dto: ExitRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    if (!this.roomService.exit(dto, client.id))
+    if (!this.roomService.exit(dto, client))
       throw new WsException('create room failed');
   }
 
