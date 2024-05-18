@@ -15,19 +15,19 @@ export class RoomService {
   create({ name }: CreateRoomDto, client: Socket) {
     if (this.rooms.has(name)) return false;
     this.rooms.set(name, new Set(client.id));
-    return client.emit('create', true);
+    return client.emit('create-room', name);
   }
 
   join({ name }: JoinRoomDto, client: Socket) {
     if (!this.rooms.has(name)) return false;
     if (this.rooms.get(name).has(client.id)) return false;
     this.rooms.get(name).add(client.id);
-    return client.emit('join', true);
+    return client.emit('join-room', name);
   }
 
   exit({ name }: ExitRoomDto, client: Socket) {
     if (!this.rooms.has(name)) return false;
     this.rooms.get(name).delete(client.id);
-    return client.emit('exit', true);
+    return client.emit('exit-room', name);
   }
 }

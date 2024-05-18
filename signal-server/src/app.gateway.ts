@@ -67,6 +67,7 @@ export class AppGateway
     @MessageBody(CreateRoomValidation) dto: CreateRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log(dto);
     if (!this.roomService.create(dto, client))
       throw new WsException('create room failed');
   }
