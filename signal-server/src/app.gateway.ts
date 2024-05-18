@@ -6,6 +6,7 @@ import {
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -20,11 +21,20 @@ import { JoinRoomDto } from './room/dto/join-room.dto';
 import { UseFilters } from '@nestjs/common';
 import { SocketExceptionFilter } from './filters/socket-exception.filter';
 
-@WebSocketGateway(+process.env.SOCKET_PORT)
+@WebSocketGateway(+process.env.SOCKET_PORT || 8081, {
+  cors: {
+    origin: '*',
+    methods: ['GET'],
+    credentials: true,
+  },
+})
 export class AppGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
   private clients: Map<string, Socket>;
+
+  @WebSocketServer()
+  server: Server;
 
   constructor(
     private readonly roomService: RoomService,
@@ -32,16 +42,20 @@ export class AppGateway
   ) {
     this.clients = new Map<string, Socket>();
   }
-  afterInit(server: Server) {}
+  afterInit(server: Server) {
+    console.log(process.env.SOCKET_PORT);
+  }
 
   handleConnection(client: Socket) {
-    if (!this.clients.has(client.id)) client.disconnect(true);
+    console.log('handleConnection', client.id);
+    if (this.clients.has(client.id)) client.disconnect(true);
     else {
       this.clients.set(client.id, client);
     }
   }
 
   handleDisconnect(client: Socket) {
+    console.log('handleDisconnect', client.id);
     this.clients.delete(client.id);
     client.disconnect(true);
   }

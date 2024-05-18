@@ -1,17 +1,18 @@
-import styled from "styled-components";
-import { VideoChat } from "../components/VideoChat";
+import React, { useEffect } from 'react';
+import { Entrance } from '../components/Entrance';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import Loading from '../components/Loading';
 
-const MainFrame = styled.div`
-  width: 100vw;
-  height: 100vh;
-  background: #0F1B26;
-  display: grid;
-  place-items: center;
-`
+
 export const Main: React.FC = () => {
+  // const socket = useAppSelector(state => state.signal.socket);
+  const connected = useAppSelector(state => state.signal.connected)
+  const dispatch = useAppDispatch()
   return (
-    <MainFrame>
-      <VideoChat/>
-    </MainFrame>
+    <React.Fragment>
+      {
+        connected ? <Entrance/> : <Loading/>
+      }
+    </React.Fragment>
   )
 }

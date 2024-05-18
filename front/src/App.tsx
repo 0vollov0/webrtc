@@ -1,13 +1,27 @@
-import { UserProvider } from "./contexts/UserConetxt";
-import { Main } from "./pages/Main";
-import 'react-chat-widget/lib/styles.css';
+import { Provider } from 'react-redux'
+import { store } from './stores/store'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Main } from './pages/Main'
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'NotoSans',
+  },
+});
 
 function App() {
   return (
-    <UserProvider>
-      <Main/>
-    </UserProvider>
-  );
+    <ThemeProvider theme={theme}>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Routes>
+            <Route path='/' element={<Main/>} />
+          </Routes>
+        </BrowserRouter>
+      </Provider>
+    </ThemeProvider>
+  )
 }
 
-export default App;
+export default App
