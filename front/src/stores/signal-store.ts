@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import { RootState } from './store';
-import { socket } from '../socket';
+import { SOCKET_ERROR_CODE, socket } from '../socket';
 
 const signal = socket;
 
@@ -8,12 +8,14 @@ export interface SocketState {
   connected: boolean;
   clientId: string;
   room: string;
+  errorCode: SOCKET_ERROR_CODE;
 }
 
 const initialState: SocketState = {
   connected: false,
   clientId: '',
   room: '',
+  errorCode: SOCKET_ERROR_CODE.NONE,
 }
 
 export const signalSlice = createSlice({
@@ -44,8 +46,11 @@ export const signalSlice = createSlice({
     updateRoom: (state, action: PayloadAction<string>) => {
       state.room = action.payload;
     },
+    updateError: (state, action: PayloadAction<SOCKET_ERROR_CODE>) => {
+      state.errorCode = action.payload;
+    }
   }
 })
 
-export const { offerSignal, setConnectStatus, updateClientId, createRoom, joinRoom, updateRoom } = signalSlice.actions;
+export const { offerSignal, setConnectStatus, updateClientId, createRoom, joinRoom, updateRoom, updateError } = signalSlice.actions;
 export default signalSlice.reducer;

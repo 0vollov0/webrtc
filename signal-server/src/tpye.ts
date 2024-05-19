@@ -1,0 +1,6 @@
+export enum SOCKET_ERROR_CODE {
+  NONE,
+  CREATE_ROOM,
+  JOIN_ROOM,
+  EXIT_ROOM,
+}

@@ -11,6 +11,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import React, { JSXElementConstructor, ReactElement, forwardRef, useCallback, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { createRoom, joinRoom } from '../stores/signal-store';
+import { SOCKET_ERROR_CODE } from '../socket';
 
 
 const Transition = forwardRef(function Transition(
@@ -26,11 +27,12 @@ const Transition = forwardRef(function Transition(
 export const Entrance: React.FC = () => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const [open, setOpen] = useState(false);
-  const dispatch = useAppDispatch()
-  const [helperText, setHelperText] = useState('');
+  const room = useAppSelector(state => state.signal.room);
+  const errorCode = useAppSelector(state => state.signal.errorCode);
+  const dispatch = useAppDispatch();
 
-  const room = useAppSelector(state => state.signal.room)
+  const [open, setOpen] = useState(false);
+  const [helperText, setHelperText] = useState('');
   const [input, setInput] = useState<string>('');
 
   const handleButton = useCallback((type: 'join' | 'create') => {
@@ -43,6 +45,19 @@ export const Entrance: React.FC = () => {
   useEffect(() => {
     setOpen(!room.length)
   }, [room])
+
+  useEffect(() => {
+    switch (errorCode) {
+      case SOCKET_ERROR_CODE.CREATE_ROOM:
+        setHelperText('Create room failed. please retry again.');
+        break;
+      case SOCKET_ERROR_CODE.JOIN_ROOM:
+        setHelperText('Join room failed. please retry again.');
+        break;
+      default:
+        break;
+    }
+  }, [errorCode])
 
   return (
     <Dialog

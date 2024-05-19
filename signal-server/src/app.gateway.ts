@@ -20,6 +20,7 @@ import { ExitRoomDto } from './room/dto/exit-room.dto';
 import { JoinRoomDto } from './room/dto/join-room.dto';
 import { UseFilters } from '@nestjs/common';
 import { SocketExceptionFilter } from './filters/socket-exception.filter';
+import { SOCKET_ERROR_CODE } from './tpye';
 
 @WebSocketGateway(+process.env.SOCKET_PORT || 8081, {
   cors: {
@@ -69,7 +70,10 @@ export class AppGateway
   ) {
     console.log(dto);
     if (!this.roomService.create(dto, client))
-      throw new WsException('create room failed');
+      throw new WsException({
+        code: SOCKET_ERROR_CODE.CREATE_ROOM,
+        message: 'create room failed',
+      });
   }
 
   @SubscribeMessage('join-room')
@@ -79,7 +83,10 @@ export class AppGateway
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.roomService.join(dto, client))
-      throw new WsException('create room failed');
+      throw new WsException({
+        code: SOCKET_ERROR_CODE.JOIN_ROOM,
+        message: 'join room failed',
+      });
   }
 
   @SubscribeMessage('exit-room')
@@ -89,7 +96,10 @@ export class AppGateway
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.roomService.exit(dto, client))
-      throw new WsException('create room failed');
+      throw new WsException({
+        code: SOCKET_ERROR_CODE.JOIN_ROOM,
+        message: 'exit room failed',
+      });
   }
 
   @SubscribeMessage('offer-signal')
