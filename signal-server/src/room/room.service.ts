@@ -14,7 +14,7 @@ export class RoomService {
 
   create({ name }: CreateRoomDto, client: Socket) {
     if (this.rooms.has(name)) return false;
-    this.rooms.set(name, new Set(client.id));
+    this.rooms.set(name, new Set([client.id]));
     return client.emit('create-room', name);
   }
 
@@ -29,5 +29,16 @@ export class RoomService {
     if (!this.rooms.has(name)) return false;
     this.rooms.get(name).delete(client.id);
     return client.emit('exit-room', name);
+  }
+
+  disconnect(client: Socket) {
+    const noOneRooms = [];
+    this.rooms.forEach((clientIds, room) => {
+      clientIds.delete(client.id);
+      if (!clientIds.size) noOneRooms.push(room);
+    });
+    noOneRooms.forEach((room) => {
+      this.rooms.delete(room);
+    });
   }
 }

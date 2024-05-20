@@ -57,7 +57,7 @@ export class AppGateway
   }
 
   handleDisconnect(client: Socket) {
-    console.log('handleDisconnect', client.id);
+    this.roomService.disconnect(client);
     this.clients.delete(client.id);
     client.disconnect(true);
   }
