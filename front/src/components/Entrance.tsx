@@ -5,9 +5,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
-import { useTheme } from '@mui/material/styles';
 import { TransitionProps } from '@mui/material/transitions';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import React, { JSXElementConstructor, ReactElement, forwardRef, useCallback, useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { createRoom, joinRoom } from '../stores/signal-store';
@@ -25,8 +23,7 @@ const Transition = forwardRef(function Transition(
 
 
 export const Entrance: React.FC = () => {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const mode = useAppSelector(state => state.screen.mode);
   const room = useAppSelector(state => state.signal.room);
   const errorCode = useAppSelector(state => state.signal.errorCode);
   const dispatch = useAppDispatch();
@@ -61,7 +58,7 @@ export const Entrance: React.FC = () => {
 
   return (
     <Dialog
-      fullScreen={fullScreen}
+      fullScreen={mode === 'mobile'}
       open={open}
       TransitionComponent={Transition}
       keepMounted
