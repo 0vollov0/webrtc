@@ -19,6 +19,7 @@ export const CamController: React.FC = () => {
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const videoinputs = useAppSelector(state => state.device.videoinputs);
   const deviceState = useAppSelector(state => state.device.deviceState);
+  const screenSize = useAppSelector(state => state.screen.size);
   const dispatch = useDispatch();
 
   const handleClick = useCallback(() => {
@@ -59,6 +60,7 @@ export const CamController: React.FC = () => {
         ref={anchorRef}
         aria-label="Button group with a nested menu"
         color="warning"
+        size={ screenSize.width < 420 ? 'small' : 'large'}
       >
         <Button color="warning" onClick={handleClick}>
           {
