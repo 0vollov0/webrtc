@@ -32,10 +32,10 @@ export const LocalStream: React.FC = () => {
   useEffect(() => {
     if (!videoRef.current || !stream) return;
     stream.getVideoTracks().forEach((track) => {
-      track.enabled = deviceState.audiooutput;
+      track.enabled = deviceState.videoinput;
     })
     videoRef.current.srcObject = deviceState.videoinput ? stream : null;
-  }, [deviceState.audiooutput, deviceState.videoinput, stream]);
+  }, [deviceState.videoinput, stream]);
 
   return (
     <Card sx={{

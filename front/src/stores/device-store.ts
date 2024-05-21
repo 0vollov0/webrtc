@@ -34,13 +34,35 @@ interface SelectDeviceAction {
 
 navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(() => {
   navigator.mediaDevices.enumerateDevices().then((devices) => {
-    const m = devices.map((device) => device.toJSON()) as SerializedMediaDeviceInfo[];
-    store.dispatch(setDeviceInfo(m))
+    store.dispatch(setDeviceInfo2(
+      devices.reduce((prev, value) => {
+        if (value.kind === 'audioinput') prev.audioinputs.push(value.toJSON());
+        else if (value.kind === 'videoinput') prev.videoinputs.push(value.toJSON());
+        return {
+          ...prev,
+        }
+      }, {
+        audioinputs: [],
+        videoinputs: [],
+      } as Pick<DeviceState, 'audioinputs' | 'videoinputs'>)
+    ))
   })
 })
-navigator.mediaDevices.addEventListener('devicechange', (ev) => {
-  console.log(ev);
-  
+navigator.mediaDevices.addEventListener('devicechange', () => {
+  navigator.mediaDevices.enumerateDevices().then((devices) => {
+    store.dispatch(setDeviceInfo2(
+      devices.reduce((prev, value) => {
+        if (value.kind === 'audioinput') prev.audioinputs.push(value.toJSON());
+        else if (value.kind === 'videoinput') prev.videoinputs.push(value.toJSON());
+        return {
+          ...prev,
+        }
+      }, {
+        audioinputs: [],
+        videoinputs: [],
+      } as Pick<DeviceState, 'audioinputs' | 'videoinputs'>)
+    ))
+  })
 })
 
 
@@ -61,7 +83,7 @@ export const deviceSlice = createSlice({
       mediaDevices.set('audioinput', []);
       mediaDevices.set('audiooutput', []);
       mediaDevices.set('videoinput', []);
-      
+
       action.payload.sort((a,b) => {
         if (a.deviceId === 'default') {
           return -1;
@@ -69,8 +91,32 @@ export const deviceSlice = createSlice({
           return 1;
         } return 0;
       }).forEach((device) => {
-        state[`${device.kind}s`].push(device);
+        if (device.kind === 'audioinput') state.audioinputs.push(device);
+        else if (device.kind === 'videoinput') state.videoinputs.push(device);
       })
+    },
+    setDeviceInfo2: (state, action: PayloadAction<Pick<DeviceState, 'audioinputs' | 'videoinputs'>>) => {
+      const audioinput = state.audioinputs[state.audioinputs.length - 1];
+      const videoinput = state.videoinputs[state.videoinputs.length - 1];
+
+      Object.keys(action.payload).forEach((key) => {
+        const kinds = key as 'audioinputs' | 'videoinputs';
+        const devices = action.payload[kinds].sort((a, b) => {
+          if (key === 'audioinputs' && audioinput) {
+            if (audioinput.deviceId === a.deviceId || audioinput.deviceId === b.deviceId) return -1;
+          }
+          if (key === 'videoinputs' && videoinput) {
+            if (videoinput.deviceId === a.deviceId || videoinput.deviceId === b.deviceId) return -1;
+          }
+          if (a.deviceId === 'default') {
+            return -1;
+          } else if (b.deviceId === 'default') {
+            return 1;
+          } return 0;
+        })
+        state[kinds] = devices;
+      })
+
     },
     selectDevice: (state, action: PayloadAction<SelectDeviceAction>) => {
       const temp = state[`${action.payload.kind}s`][state[`${action.payload.kind}s`].length-1];
@@ -79,5 +125,5 @@ export const deviceSlice = createSlice({
     }
   }
 })
-export const { updateDeviceState, setDeviceInfo, selectDevice } = deviceSlice.actions;
+export const { updateDeviceState, setDeviceInfo, selectDevice, setDeviceInfo2 } = deviceSlice.actions;
 export default deviceSlice.reducer;

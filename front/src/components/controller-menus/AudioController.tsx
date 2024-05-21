@@ -1,23 +1,14 @@
 import React, { useCallback } from "react";
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import Grow from '@mui/material/Grow';
-import Paper from '@mui/material/Paper';
-import Popper from '@mui/material/Popper';
-import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useAppSelector } from "../../hooks";
 import { useDispatch } from "react-redux";
-import { selectDevice, updateDeviceState } from "../../stores/device-store";
+import { updateDeviceState } from "../../stores/device-store";
 
 export const AudioController: React.FC = () => {
-  const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
-  const audiooutputs = useAppSelector(state => state.device.audiooutputs);
   const deviceState = useAppSelector(state => state.device.deviceState);
   const screenSize = useAppSelector(state => state.screen.size);
   const dispatch = useDispatch();
@@ -29,7 +20,7 @@ export const AudioController: React.FC = () => {
     }));
   }, [deviceState.audiooutput, dispatch])
 
-  const handleMenuItemClick = useCallback((
+  /* const handleMenuItemClick = useCallback((
     _: React.MouseEvent<HTMLLIElement, MouseEvent>,
     index: number,
   ) => {
@@ -51,7 +42,7 @@ export const AudioController: React.FC = () => {
     }
 
     setOpen(false);
-  };
+  }; */
 
   return (
     <React.Fragment>
@@ -67,7 +58,7 @@ export const AudioController: React.FC = () => {
             deviceState.audiooutput ? <VolumeUpIcon sx={{ color: '#FFFFFF' }} fontSize="large"/> : <VolumeOffIcon sx={{ color: '#FFFFFF' }} fontSize="large"/>
           }
         </Button>
-        <Button
+        {/* <Button
           size="small"
           aria-controls={open ? 'split-button-menu' : undefined}
           aria-expanded={open ? 'true' : undefined}
@@ -77,9 +68,9 @@ export const AudioController: React.FC = () => {
           color="warning"
         >
           <ArrowDropUpIcon/>
-        </Button>
+        </Button> */}
       </ButtonGroup>
-      <Popper
+      {/* <Popper
         sx={{
           zIndex: 1,
         }}
@@ -114,7 +105,7 @@ export const AudioController: React.FC = () => {
             </Paper>
           </Grow>
         )}
-      </Popper>
+      </Popper> */}
     </React.Fragment>
   )
 }
