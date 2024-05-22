@@ -34,7 +34,7 @@ interface SelectDeviceAction {
 
 navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(() => {
   navigator.mediaDevices.enumerateDevices().then((devices) => {
-    store.dispatch(setDeviceInfo2(
+    store.dispatch(setDeviceInfo(
       devices.reduce((prev, value) => {
         if (value.kind === 'audioinput') prev.audioinputs.push(value.toJSON());
         else if (value.kind === 'videoinput') prev.videoinputs.push(value.toJSON());
@@ -50,7 +50,7 @@ navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(() => {
 })
 navigator.mediaDevices.addEventListener('devicechange', () => {
   navigator.mediaDevices.enumerateDevices().then((devices) => {
-    store.dispatch(setDeviceInfo2(
+    store.dispatch(setDeviceInfo(
       devices.reduce((prev, value) => {
         if (value.kind === 'audioinput') prev.audioinputs.push(value.toJSON());
         else if (value.kind === 'videoinput') prev.videoinputs.push(value.toJSON());
@@ -78,7 +78,7 @@ export const deviceSlice = createSlice({
     updateDeviceState: (state, action: PayloadAction<UpdateDevicePayload>) => {
       state.deviceState[action.payload.kind] = action.payload.enable;
     },
-    setDeviceInfo: (state, action: PayloadAction<SerializedMediaDeviceInfo[]>) => {
+    /* setDeviceInfo: (state, action: PayloadAction<SerializedMediaDeviceInfo[]>) => {
       const mediaDevices = new Map<MediaDeviceKind, SerializedMediaDeviceInfo[]>();
       mediaDevices.set('audioinput', []);
       mediaDevices.set('audiooutput', []);
@@ -94,8 +94,8 @@ export const deviceSlice = createSlice({
         if (device.kind === 'audioinput') state.audioinputs.push(device);
         else if (device.kind === 'videoinput') state.videoinputs.push(device);
       })
-    },
-    setDeviceInfo2: (state, action: PayloadAction<Pick<DeviceState, 'audioinputs' | 'videoinputs'>>) => {
+    }, */
+    setDeviceInfo: (state, action: PayloadAction<Pick<DeviceState, 'audioinputs' | 'videoinputs'>>) => {
       const audioinput = state.audioinputs[state.audioinputs.length - 1];
       const videoinput = state.videoinputs[state.videoinputs.length - 1];
 
@@ -125,5 +125,5 @@ export const deviceSlice = createSlice({
     }
   }
 })
-export const { updateDeviceState, setDeviceInfo, selectDevice, setDeviceInfo2 } = deviceSlice.actions;
+export const { updateDeviceState, selectDevice, setDeviceInfo } = deviceSlice.actions;
 export default deviceSlice.reducer;

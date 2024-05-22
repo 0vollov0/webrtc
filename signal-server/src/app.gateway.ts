@@ -21,6 +21,14 @@ import { JoinRoomDto } from './room/dto/join-room.dto';
 import { UseFilters } from '@nestjs/common';
 import { SocketExceptionFilter } from './filters/socket-exception.filter';
 import { SOCKET_ERROR_CODE } from './tpye';
+import { OfferSignalDto } from './signal/dto/offer-signal.dto';
+import { OfferSignalValidation } from './validations/offer-signal.pipe';
+import { AnswerSignalDto } from './signal/dto/answer-signal.dto';
+import { AnswerSignalValidation } from './validations/answer-signal.pipe';
+import { IceCandidateSignalDto } from './signal/dto/icecandidate-signal.dto';
+import { RequestRoomRoomInfoDto } from './room/dto/request-room-info.dto';
+import { RequestRoomInfoValidation } from './validations/request-room-info.pipe';
+import { IceCandidateSignalValidation } from './validations/icecandidate-signal.pipe';
 
 @WebSocketGateway(+process.env.SOCKET_PORT || 8081, {
   cors: {
@@ -44,7 +52,7 @@ export class AppGateway
     this.clients = new Map<string, Socket>();
   }
   afterInit(server: Server) {
-    console.log(process.env.SOCKET_PORT);
+    this.signalService.setServer(server);
   }
 
   handleConnection(client: Socket) {
@@ -62,13 +70,21 @@ export class AppGateway
     client.disconnect(true);
   }
 
+  @SubscribeMessage('room-info')
+  @UseFilters(SocketExceptionFilter)
+  handleRoomInfo(
+    @MessageBody(RequestRoomInfoValidation) dto: RequestRoomRoomInfoDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return this.roomService.sendRoomInfo(dto, client);
+  }
+
   @SubscribeMessage('create-room')
   @UseFilters(SocketExceptionFilter)
   handleCreateRoom(
     @MessageBody(CreateRoomValidation) dto: CreateRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log(dto);
     if (!this.roomService.create(dto, client))
       throw new WsException({
         code: SOCKET_ERROR_CODE.CREATE_ROOM,
@@ -104,19 +120,30 @@ export class AppGateway
 
   @SubscribeMessage('offer-signal')
   @UseFilters(SocketExceptionFilter)
-  handleOfferSignal() {
-    return null;
+  handleOfferSignal(
+    @MessageBody(OfferSignalValidation) dto: OfferSignalDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return this.signalService.sendOffer(dto, client);
   }
 
   @SubscribeMessage('answer-signal')
   @UseFilters(SocketExceptionFilter)
-  handleAnswerSignal() {
-    return null;
+  handleAnswerSignal(
+    @MessageBody(AnswerSignalValidation) dto: AnswerSignalDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return this.signalService.sendAnswer(dto, client);
   }
 
   @SubscribeMessage('icecandidate-signal')
   @UseFilters(SocketExceptionFilter)
-  handleIcecandidateSignal() {
-    return null;
+  handleIcecandidateSignal(
+    @MessageBody(IceCandidateSignalValidation) dto: IceCandidateSignalDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log(dto);
+    
+    return this.signalService.sendIceCandidate(dto, client);
   }
 }

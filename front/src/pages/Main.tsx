@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Entrance } from '../components/Entrance';
 import { useAppSelector } from '../hooks';
 import Loading from '../components/Loading';
@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import {  updateScreenMode } from '../stores/screen-store';
 import { LocalStream } from '../components/LocalStream';
 import styled from 'styled-components';
+import { VideoChat } from '../components/VideoChat';
 
 const MainFrame = styled.div`
   display: flex;
@@ -23,12 +24,24 @@ export const Main: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const connected = useAppSelector(state => state.signal.connected);
   const room = useAppSelector(state => state.signal.room);
-
+  const videoinputs = useAppSelector(state => state.device.videoinputs);
+  const [stream, setStream] = useState<MediaStream>();
+  
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(updateScreenMode(isMobile ? 'mobile' : 'desktop'))
   }, [isMobile, dispatch])
+
+  useEffect(() => {
+    if (!videoinputs.length) return;
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        deviceId: videoinputs[videoinputs.length-1].deviceId,
+      }
+    }).then(setStream);
+  }, [videoinputs])
 
   return (
     <React.Fragment>
@@ -36,11 +49,14 @@ export const Main: React.FC = () => {
         connected ? <Entrance/> : <Loading/>
       }
       {
-        room.length ? (
+        room.length && stream ? (
           (
             <>
               <MainFrame>
-                <LocalStream/>
+                <VideoChat
+                  localStream={stream}
+                />
+                {/* <LocalStream/> */}
               </MainFrame>
               <Controller/>
             </>

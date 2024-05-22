@@ -1,8 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
-import { RootState } from './store';
 import { SOCKET_ERROR_CODE, socket } from '../socket';
 
-const signal = socket;
+export const signalConnection = socket;
 
 export interface SocketState {
   connected: boolean;
@@ -33,13 +32,13 @@ export const signalSlice = createSlice({
     },
     createRoom: (state, action: PayloadAction<string>) => {
       if (!state.connected) return;
-      signal.emit('create-room', {
+      signalConnection.emit('create-room', {
         name: action.payload,
       })
     },
     joinRoom: (state, action: PayloadAction<string>) => {
       if (!state.connected) return;
-      signal.emit('join-room', {
+      signalConnection.emit('join-room', {
         name: action.payload,
       })
     },

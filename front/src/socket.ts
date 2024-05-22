@@ -48,5 +48,6 @@ socket.on('exit-room', () => {
 })
 
 socket.on('error', (exception: SocketException) => {
+  console.error(exception);
   store.dispatch(updateError(exception.error.code))
 })
