@@ -27,8 +27,6 @@ export class SignalService {
   }
 
   sendIceCandidate(dto: IceCandidateSignalDto, client: Socket) {
-    console.log(`icecandidate-signal-${dto.room}-${dto.receiver}`);
-    
     return this.server
       .to(dto.room)
       .emit(`icecandidate-signal-${dto.room}-${dto.receiver}`, {
