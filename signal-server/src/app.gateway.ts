@@ -142,8 +142,6 @@ export class AppGateway
     @MessageBody(IceCandidateSignalValidation) dto: IceCandidateSignalDto,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log(dto);
-    
     return this.signalService.sendIceCandidate(dto, client);
   }
 }
