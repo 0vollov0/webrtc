@@ -7,7 +7,6 @@ import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import {  updateScreenMode } from '../stores/screen-store';
-import { LocalStream } from '../components/LocalStream';
 import styled from 'styled-components';
 import { VideoChat } from '../components/VideoChat';
 
@@ -24,8 +23,11 @@ export const Main: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const connected = useAppSelector(state => state.signal.connected);
   const room = useAppSelector(state => state.signal.room);
-  const videoinputs = useAppSelector(state => state.device.videoinputs);
-  const [stream, setStream] = useState<MediaStream>();
+  /* const videoinputs = useAppSelector(state => state.device.videoinputs);
+  const audioinputs = useAppSelector(state => state.device.audioinputs);
+  const deviceState = useAppSelector(state => state.device.deviceState); */
+
+  const [stream, setStream] = useState<MediaStream | undefined>();
   
   const dispatch = useDispatch();
 
@@ -34,14 +36,22 @@ export const Main: React.FC = () => {
   }, [isMobile, dispatch])
 
   useEffect(() => {
-    if (!videoinputs.length) return;
+    // if (videoinputs.length || audioinputs.length) {
+    //   navigator.mediaDevices.getUserMedia({
+    //     audio: !deviceState.audioinput || !audioinputs.length ? false : {
+    //       deviceId: audioinputs[audioinputs.length-1].deviceId,
+    //       echoCancellation: true,
+    //     },
+    //     video: !deviceState.videoinput || !videoinputs.length ? false : {
+    //       deviceId: videoinputs[videoinputs.length-1].deviceId,
+    //     },
+    //   }).then(setStream);
+    // }
     navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        deviceId: videoinputs[videoinputs.length-1].deviceId,
-      }
+      audio: true,
+      video: true,
     }).then(setStream);
-  }, [videoinputs])
+  }, [])
 
   return (
     <React.Fragment>
@@ -49,14 +59,13 @@ export const Main: React.FC = () => {
         connected ? <Entrance/> : <Loading/>
       }
       {
-        room.length && stream ? (
+        room.length ? (
           (
             <>
               <MainFrame>
                 <VideoChat
                   localStream={stream}
                 />
-                {/* <LocalStream/> */}
               </MainFrame>
               <Controller/>
             </>

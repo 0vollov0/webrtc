@@ -15,6 +15,7 @@ const ControllerFrame = styled.div`
   justify-content: center;
   align-items: center;
   gap: 0px 30px;
+  z-index: 20;
 `
 
 export const Controller: React.FC = () => {

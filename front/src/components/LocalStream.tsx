@@ -1,41 +1,49 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Card from '@mui/material/Card';
 import { Box, CardActionArea, Typography } from '@mui/material';
 import { useAppSelector } from "../hooks";
 import styled from "styled-components";
 import PersonIcon from '@mui/icons-material/Person';
 
-const Video = styled.video`
+const Video = styled.video<{ hidden: boolean }>`
   width: 100%;
   height: 100%;
   position: relative;
+  visibility: ${props => props.hidden ? 'hidden' : 'visible'};
 `
 
-export const LocalStream: React.FC = () => {
+interface LocalStreamProps {
+  stream?: MediaStream;
+}
+
+export const LocalStream: React.FC<LocalStreamProps> = ({ stream }) => {
   const videoinputs = useAppSelector(state => state.device.videoinputs);
   const deviceState = useAppSelector(state => state.device.deviceState);
   const screenSize = useAppSelector(state => state.screen.size);
 
-  const [stream, setStream] = useState<MediaStream>();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  // const [stream, setStream] = useState<MediaStream>();
+  const ref = useRef<HTMLVideoElement>(null);
   
-  useEffect(() => {
-    if (!videoinputs.length) return;
-    navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        deviceId: videoinputs[videoinputs.length-1].deviceId,
-      }
-    }).then(setStream);
-  }, [videoinputs])
+  // useEffect(() => {
+  //   if (!videoinputs.length) return;
+  //   navigator.mediaDevices.getUserMedia({
+  //     audio: false,
+  //     video: {
+  //       deviceId: videoinputs[videoinputs.length-1].deviceId,
+  //     }
+  //   }).then(setStream);
+  // }, [videoinputs])
 
   useEffect(() => {
-    if (!videoRef.current || !stream) return;
+    if (!ref.current || !stream) return;
     stream.getVideoTracks().forEach((track) => {
       track.enabled = deviceState.videoinput;
     })
-    videoRef.current.srcObject = deviceState.videoinput ? stream : null;
-  }, [deviceState.videoinput, stream]);
+    stream.getAudioTracks().forEach((track) => {
+      track.enabled = deviceState.audioinput;
+    })
+    ref.current.srcObject = stream;
+  }, [deviceState, stream]);
 
   return (
     <Card sx={{
@@ -61,8 +69,15 @@ export const LocalStream: React.FC = () => {
           display: 'flex',
         }}
       >
+        <Video 
+          ref={ref}
+          autoPlay={deviceState.videoinput}
+          controls={false}
+          hidden={!deviceState.videoinput}
+          muted
+        />
         {
-          deviceState.videoinput ? <Video ref={videoRef} autoPlay={true} controls={false} muted/> : <PersonIcon sx={{ color: 'white', fontSize: screenSize.width * 0.2 }}/>
+          !deviceState.videoinput ? <PersonIcon sx={{ color: 'white', fontSize: screenSize.width * 0.2 }}/> : <></>
         }
       </CardActionArea>
     </Card>

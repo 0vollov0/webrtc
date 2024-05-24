@@ -32,21 +32,21 @@ interface SelectDeviceAction {
   deviceId: string;
 }
 
-navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(() => {
-  navigator.mediaDevices.enumerateDevices().then((devices) => {
-    store.dispatch(setDeviceInfo(
-      devices.reduce((prev, value) => {
-        if (value.kind === 'audioinput') prev.audioinputs.push(value.toJSON());
-        else if (value.kind === 'videoinput') prev.videoinputs.push(value.toJSON());
-        return {
-          ...prev,
-        }
-      }, {
-        audioinputs: [],
-        videoinputs: [],
-      } as Pick<DeviceState, 'audioinputs' | 'videoinputs'>)
-    ))
-  })
+/* navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(() => {
+}) */
+navigator.mediaDevices.enumerateDevices().then((devices) => {
+  store.dispatch(setDeviceInfo(
+    devices.reduce((prev, value) => {
+      if (value.kind === 'audioinput') prev.audioinputs.push(value.toJSON());
+      else if (value.kind === 'videoinput') prev.videoinputs.push(value.toJSON());
+      return {
+        ...prev,
+      }
+    }, {
+      audioinputs: [],
+      videoinputs: [],
+    } as Pick<DeviceState, 'audioinputs' | 'videoinputs'>)
+  ))
 })
 navigator.mediaDevices.addEventListener('devicechange', () => {
   navigator.mediaDevices.enumerateDevices().then((devices) => {

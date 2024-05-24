@@ -6,7 +6,7 @@ interface Size {
   height: number;
 }
 
-interface ScreenState {
+export interface ScreenState {
   mode: 'mobile' | 'desktop';
   direction:  'vertical' | 'horizontal';
   size: Size;
