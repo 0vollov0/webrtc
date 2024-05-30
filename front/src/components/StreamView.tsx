@@ -31,7 +31,7 @@ export const StreamView: React.FC<StreamViewProps> = ({
   const isVideoBlack = useCallback((video: HTMLVideoElement) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) return;
     const width = video.videoWidth;
     const height = video.videoHeight;
