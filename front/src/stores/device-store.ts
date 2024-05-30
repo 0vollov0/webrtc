@@ -78,23 +78,6 @@ export const deviceSlice = createSlice({
     updateDeviceState: (state, action: PayloadAction<UpdateDevicePayload>) => {
       state.deviceState[action.payload.kind] = action.payload.enable;
     },
-    /* setDeviceInfo: (state, action: PayloadAction<SerializedMediaDeviceInfo[]>) => {
-      const mediaDevices = new Map<MediaDeviceKind, SerializedMediaDeviceInfo[]>();
-      mediaDevices.set('audioinput', []);
-      mediaDevices.set('audiooutput', []);
-      mediaDevices.set('videoinput', []);
-
-      action.payload.sort((a,b) => {
-        if (a.deviceId === 'default') {
-          return -1;
-        } else if (b.deviceId === 'default') {
-          return 1;
-        } return 0;
-      }).forEach((device) => {
-        if (device.kind === 'audioinput') state.audioinputs.push(device);
-        else if (device.kind === 'videoinput') state.videoinputs.push(device);
-      })
-    }, */
     setDeviceInfo: (state, action: PayloadAction<Pick<DeviceState, 'audioinputs' | 'videoinputs'>>) => {
       const audioinput = state.audioinputs[state.audioinputs.length - 1];
       const videoinput = state.videoinputs[state.videoinputs.length - 1];

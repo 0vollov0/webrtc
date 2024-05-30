@@ -22,7 +22,7 @@ export const Main: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const connected = useAppSelector(state => state.signal.connected);
-  const room = useAppSelector(state => state.signal.room);
+  // const room = useAppSelector(state => state.signal.room);
   /* const videoinputs = useAppSelector(state => state.device.videoinputs);
   const audioinputs = useAppSelector(state => state.device.audioinputs);
   const deviceState = useAppSelector(state => state.device.deviceState); */

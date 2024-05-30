@@ -94,9 +94,9 @@ export const VideoChat: React.FC<VideoChatProps> = ({ localStream }) => {
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
   const room = useAppSelector(state => state.signal.room);
   const clientId = useAppSelector(state => state.signal.clientId);
-  const deviceState = useAppSelector(state => state.device.deviceState);
-  const screenDirection = useAppSelector(state => state.screen.direction);
-  const screenSize = useAppSelector(state => state.screen.size);
+  // const deviceState = useAppSelector(state => state.device.deviceState);
+  // const screenDirection = useAppSelector(state => state.screen.direction);
+  // const screenSize = useAppSelector(state => state.screen.size);
   
   const ontrack = useCallback((event: RTCTrackEvent, participant: string) => {
     console.log('ontrack', participant);
@@ -114,21 +114,6 @@ export const VideoChat: React.FC<VideoChatProps> = ({ localStream }) => {
       return newRemoteStreams;
     });
   }, [])
-
-  /* const onRoomInfo = useCallback((message: never) => {
-    const roomInfo: RoomInfo = message;
-    roomInfo.participants.forEach(async (participant) => {
-      const peerConnection = createPeerConnection({ room, receiver: participant, localStream, ontrack, ondisconnect });
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      peerConnections.current.set(participant, peerConnection);
-      signalConnection.emit('offer-signal', {
-        room,
-        offer,
-        receiver: participant,
-      });
-    })
-  }, [localStream, ondisconnect, ontrack, room]) */
 
   useEffect(() => {
     if (room.length) {
@@ -218,16 +203,4 @@ export const VideoChat: React.FC<VideoChatProps> = ({ localStream }) => {
         <LocalStream stream={localStream} />
       </VideoChatFrame>
   )
-    /* {
-      !room.length ? <></> : (
-        <VideoChatFrame>
-          {
-            Array.from(remoteStreams.entries()).map(([participant, stream]) => 
-              <StreamView key={participant} participant={participant} stream={stream} />
-            )
-          }
-          <LocalStream stream={localStream} />
-        </VideoChatFrame>
-      )
-    } */
 }
