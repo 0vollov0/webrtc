@@ -4,3 +4,5 @@ node_modules
 
 build
 signal-server/yarn-error.log
+
+signal-server/dist
