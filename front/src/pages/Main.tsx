@@ -22,10 +22,9 @@ export const Main: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const connected = useAppSelector(state => state.signal.connected);
-  // const room = useAppSelector(state => state.signal.room);
-  /* const videoinputs = useAppSelector(state => state.device.videoinputs);
+  const videoinputs = useAppSelector(state => state.device.videoinputs);
   const audioinputs = useAppSelector(state => state.device.audioinputs);
-  const deviceState = useAppSelector(state => state.device.deviceState); */
+  const deviceState = useAppSelector(state => state.device.deviceState);
 
   const [stream, setStream] = useState<MediaStream | undefined>();
   
@@ -36,48 +35,36 @@ export const Main: React.FC = () => {
   }, [isMobile, dispatch])
 
   useEffect(() => {
-    // if (videoinputs.length || audioinputs.length) {
-    //   navigator.mediaDevices.getUserMedia({
-    //     audio: !deviceState.audioinput || !audioinputs.length ? false : {
-    //       deviceId: audioinputs[audioinputs.length-1].deviceId,
-    //       echoCancellation: true,
-    //     },
-    //     video: !deviceState.videoinput || !videoinputs.length ? false : {
-    //       deviceId: videoinputs[videoinputs.length-1].deviceId,
-    //     },
-    //   }).then(setStream);
-    // }
-    navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    }).then(setStream);
-  }, [])
+    if (videoinputs.length || audioinputs.length) {      
+      navigator.mediaDevices.getUserMedia({
+        audio: !deviceState.audioinput || !audioinputs.length ? false : {
+          deviceId: audioinputs[audioinputs.length-1].deviceId,
+          echoCancellation: true,
+        },
+        video: !deviceState.videoinput || !videoinputs.length ? false : {
+          deviceId: videoinputs[videoinputs.length-1].deviceId,
+        },
+      }).then(setStream);
+    }    
+    return () => setStream(undefined);
+  }, [videoinputs, audioinputs])
 
   return (
     <React.Fragment>
       {
         connected ? <Entrance/> : <Loading/>
       }
-      <MainFrame>
-        <VideoChat
-          localStream={stream}
-        />
-      </MainFrame>
+      {
+        stream
+        ? (
+          <MainFrame>
+            <VideoChat
+              localStream={stream}
+            />
+          </MainFrame>
+        ) : <Loading/>
+      }
       <Controller/>
-      {/* {
-        room.length ? (
-          (
-            <>
-              <MainFrame>
-                <VideoChat
-                  localStream={stream}
-                />
-              </MainFrame>
-              <Controller/>
-            </>
-          )
-        ) : <></>
-      } */}
     </React.Fragment>
   )
 }
