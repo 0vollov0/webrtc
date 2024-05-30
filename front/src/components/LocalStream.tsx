@@ -17,22 +17,10 @@ interface LocalStreamProps {
 }
 
 export const LocalStream: React.FC<LocalStreamProps> = ({ stream }) => {
-  const videoinputs = useAppSelector(state => state.device.videoinputs);
   const deviceState = useAppSelector(state => state.device.deviceState);
   const screenSize = useAppSelector(state => state.screen.size);
 
-  // const [stream, setStream] = useState<MediaStream>();
   const ref = useRef<HTMLVideoElement>(null);
-  
-  // useEffect(() => {
-  //   if (!videoinputs.length) return;
-  //   navigator.mediaDevices.getUserMedia({
-  //     audio: false,
-  //     video: {
-  //       deviceId: videoinputs[videoinputs.length-1].deviceId,
-  //     }
-  //   }).then(setStream);
-  // }, [videoinputs])
 
   useEffect(() => {
     if (!ref.current || !stream) return;
