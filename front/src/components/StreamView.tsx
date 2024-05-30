@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Card from '@mui/material/Card';
 import { Box, CardActionArea, Typography } from '@mui/material';
 import { useAppSelector } from "../hooks";
@@ -23,12 +23,57 @@ export const StreamView: React.FC<StreamViewProps> = ({
 }) => {
   const screenSize = useAppSelector(state => state.screen.size);
   const ref = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isBlack, setIsBlack] = useState<boolean>(false)
+
   const [block, setBlock] = useState<boolean>(false);
+
+  const isVideoBlack = useCallback((video: HTMLVideoElement) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    if (width === 0 || height === 0) {
+      return false;
+    }
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(video, 0, 0, width, height);
+
+    const frame = context.getImageData(0, 0, width, height);
+    const data = frame.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      if (r !== 0 || g !== 0 || b !== 0) {
+        return false;
+      }
+    }
+    return true;
+  },[])
+
+  const checkVideoFrame = useCallback(() => {
+    const video = ref.current;
+    if (!video) return;
+    const isBlack = isVideoBlack(video);
+    if (isBlack) setIsBlack(true);
+    else setIsBlack(false);
+  }, [isVideoBlack])
 
   useEffect(() => {
     if (!ref.current || !stream) return;
     ref.current.srcObject = stream;
   }, [stream])
+
+  useEffect(() => {
+    const intervalId = setInterval(checkVideoFrame, 1000);
+    return () => clearInterval(intervalId);
+  }, [checkVideoFrame])
 
   return (
     <Card
@@ -63,11 +108,12 @@ export const StreamView: React.FC<StreamViewProps> = ({
           autoPlay={!block}
           controls={false}
           muted={block}
-          hidden={block}
+          hidden={block || isBlack}
         />
         {
-          block ? <PersonIcon sx={{ color: 'white', fontSize: screenSize.width * 0.2 }}/>: <></>
+          block || isBlack ? <PersonIcon sx={{ color: 'white', fontSize: screenSize.width * 0.2 }}/>: <></>
         }
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
       </CardActionArea>
     </Card>
   )
