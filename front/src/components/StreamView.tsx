@@ -61,7 +61,7 @@ export const StreamView: React.FC<StreamViewProps> = ({
         <Video 
           ref={ref}
           autoPlay={!block}
-          controls={true}
+          controls={false}
           muted={block}
           hidden={block}
         />

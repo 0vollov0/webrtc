@@ -58,7 +58,13 @@ export const Main: React.FC = () => {
       {
         connected ? <Entrance/> : <Loading/>
       }
-      {
+      <MainFrame>
+        <VideoChat
+          localStream={stream}
+        />
+      </MainFrame>
+      <Controller/>
+      {/* {
         room.length ? (
           (
             <>
@@ -71,7 +77,7 @@ export const Main: React.FC = () => {
             </>
           )
         ) : <></>
-      }
+      } */}
     </React.Fragment>
   )
 }

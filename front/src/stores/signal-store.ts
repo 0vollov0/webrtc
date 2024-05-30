@@ -21,9 +21,6 @@ export const signalSlice = createSlice({
   name: 'signal',
   initialState,
   reducers: {
-    offerSignal: () => {
-      
-    },
     setConnectStatus: (state, action: PayloadAction<boolean>) => {
       state.connected = action.payload;
     },
@@ -47,9 +44,24 @@ export const signalSlice = createSlice({
     },
     updateError: (state, action: PayloadAction<SOCKET_ERROR_CODE>) => {
       state.errorCode = action.payload;
+    },
+    exitRoom: (state, action: PayloadAction<string>) => {
+      if (!state.connected || state.room.length <= 0) return;
+      state.room = '';
+      socket.emit('exit-room', {
+        name: action.payload,
+      })
     }
   }
 })
 
-export const { offerSignal, setConnectStatus, updateClientId, createRoom, joinRoom, updateRoom, updateError } = signalSlice.actions;
+export const {
+  setConnectStatus,
+  updateClientId,
+  createRoom,
+  joinRoom,
+  updateRoom,
+  updateError,
+  exitRoom
+} = signalSlice.actions;
 export default signalSlice.reducer;

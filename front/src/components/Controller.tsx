@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { MicController } from "./controller-menus/MicController";
-import { AudioController } from "./controller-menus/AudioController";
 import { CamController } from "./controller-menus/CamController";
+import { CloseController } from "./controller-menus/CloseController";
 
 const ControllerFrame = styled.div`
   position: fixed;
@@ -21,9 +21,9 @@ const ControllerFrame = styled.div`
 export const Controller: React.FC = () => {
   return (
     <ControllerFrame>
-      <AudioController/>
       <MicController/>
       <CamController/>
+      <CloseController/>
     </ControllerFrame>
   )
 }

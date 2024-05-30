@@ -31,6 +31,7 @@ export class RoomService {
   exit({ name }: ExitRoomDto, client: Socket) {
     if (!this.rooms.has(name)) return false;
     this.rooms.get(name).delete(client.id);
+    if (!this.rooms.get(name).size) this.rooms.delete(name);
     client.leave(name);
     return client.emit('exit-room', name);
   }

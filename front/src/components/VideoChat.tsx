@@ -46,12 +46,14 @@ interface CreatePeerConnectionProp {
   receiver: string;
   localStream: MediaStream;
   ontrack: (event: RTCTrackEvent, participant: string) => void;
+  ondisconnect: (participant: string) => void;
 }
 const createPeerConnection = ({
   room,
   receiver,
   localStream,
   ontrack,
+  ondisconnect,
 }: CreatePeerConnectionProp) => {
   
   const peerConnection = new RTCPeerConnection({
@@ -77,11 +79,7 @@ const createPeerConnection = ({
     
   })
   peerConnection.addEventListener('connectionstatechange', () => {
-    // if (peerConnection.connectionState === 'connected') {
-    //   console.log('Peers connected');
-    // }
-    console.log(peerConnection.connectionState);
-    
+    if (peerConnection.connectionState === 'disconnected') ondisconnect(receiver);
   })
   peerConnection.ontrack = (event) => ontrack(event, receiver);
   return peerConnection;
@@ -101,25 +99,53 @@ export const VideoChat: React.FC<VideoChatProps> = ({ localStream }) => {
   const screenSize = useAppSelector(state => state.screen.size);
   
   const ontrack = useCallback((event: RTCTrackEvent, participant: string) => {
+    console.log('ontrack', participant);
+    
     const [remoteStream] = event.streams;
-    // setRemoteStreams((prev) => new Map([...prev, [participant, remoteStream]]))
     setRemoteStreams((prev) => new Map(prev.set(participant, remoteStream)));
   }, [])
 
+  const ondisconnect = useCallback((participant: string) => {
+    console.log('ondisconnect', participant);
+    peerConnections.current.delete(participant);
+    setRemoteStreams((prev) => {
+      const newRemoteStreams = new Map(prev);
+      newRemoteStreams.delete(participant);
+      return newRemoteStreams;
+    });
+  }, [])
+
+  /* const onRoomInfo = useCallback((message: never) => {
+    const roomInfo: RoomInfo = message;
+    roomInfo.participants.forEach(async (participant) => {
+      const peerConnection = createPeerConnection({ room, receiver: participant, localStream, ontrack, ondisconnect });
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      peerConnections.current.set(participant, peerConnection);
+      signalConnection.emit('offer-signal', {
+        room,
+        offer,
+        receiver: participant,
+      });
+    })
+  }, [localStream, ondisconnect, ontrack, room]) */
+
   useEffect(() => {
-    setTimeout(() => {
+    if (room.length) {
       signalConnection.emit('room-info', {
         name: room,
       });
-    }, 1000);
+    } else {
+      Array.from(peerConnections.current.values()).forEach((peer) => peer.close());
+    }
   }, [room])
 
   useEffect(() => {
-    if (!localStream) return;
+    if (!localStream || !room.length) return;
     signalConnection.on(`room-info`, (message) => {
       const roomInfo: RoomInfo = message;
       roomInfo.participants.forEach(async (participant) => {
-        const peerConnection = createPeerConnection({ room, receiver: participant, localStream, ontrack });
+        const peerConnection = createPeerConnection({ room, receiver: participant, localStream, ontrack, ondisconnect });
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         peerConnections.current.set(participant, peerConnection);
@@ -147,14 +173,20 @@ export const VideoChat: React.FC<VideoChatProps> = ({ localStream }) => {
         console.error(error);
       }
     })
-  }, [clientId, localStream, ontrack, room])
+
+    return () => {
+      signalConnection.removeListener('room-info');
+      signalConnection.removeListener(`answer-signal-${room}-${clientId}`);
+      signalConnection.removeListener(`icecandidate-signal-${room}-${clientId}`);
+    }
+  }, [clientId, localStream, ontrack, room, ondisconnect])
 
   useEffect(() => {
-    if (!localStream) return;
+    if (!localStream || !room.length) return;
     signalConnection.on(`offer-signal-${room}-${clientId}`, async (message) => {
       try {
         const receiveOffer: ReceiveOffer = message;
-        const peerConnection = createPeerConnection({ room, receiver: receiveOffer.sender, localStream, ontrack });
+        const peerConnection = createPeerConnection({ room, receiver: receiveOffer.sender, localStream, ontrack, ondisconnect });
         peerConnection.setRemoteDescription(new RTCSessionDescription(receiveOffer.offer));
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
@@ -168,16 +200,34 @@ export const VideoChat: React.FC<VideoChatProps> = ({ localStream }) => {
         console.error(error);
       }
     })
-  }, [clientId, localStream, ontrack, room])
+
+    return () => {
+      signalConnection.removeListener(`offer-signal-${room}-${clientId}`);
+    }
+  }, [clientId, localStream, ontrack, room, ondisconnect])
 
   return (
-    <VideoChatFrame>
-      {
-        Array.from(remoteStreams.entries()).map(([participant, stream]) => 
-          <StreamView key={participant} participant={participant} stream={stream} />
-        )
-      }
-      <LocalStream stream={localStream} />
-    </VideoChatFrame>
+    !room.length
+    ? <></>
+    : <VideoChatFrame>
+        {
+          Array.from(remoteStreams.entries()).map(([participant, stream]) => 
+            <StreamView key={participant} participant={participant} stream={stream} />
+          )
+        }
+        <LocalStream stream={localStream} />
+      </VideoChatFrame>
   )
+    /* {
+      !room.length ? <></> : (
+        <VideoChatFrame>
+          {
+            Array.from(remoteStreams.entries()).map(([participant, stream]) => 
+              <StreamView key={participant} participant={participant} stream={stream} />
+            )
+          }
+          <LocalStream stream={localStream} />
+        </VideoChatFrame>
+      )
+    } */
 }
