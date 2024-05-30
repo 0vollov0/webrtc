@@ -1,18 +1,14 @@
-version: '3.7'
-
 services:
-  webrtc-front:
+  front:
     build:
       context: .
       dockerfile: front/dockerfile
     ports:
-      - 3000:3000
-    volumes:
-      - /home/ubuntu/app/front/build:/home/ubuntu/app/front/build
+      - 5173:5173
   
-  webrtc-server:
+  signal-server:
     build: 
       context: .
       dockerfile: signal-server/dockerfile
     ports:
-      - 8080:8080
+      - 8081:8081

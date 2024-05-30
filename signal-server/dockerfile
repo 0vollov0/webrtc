@@ -1,0 +1,14 @@
+FROM node:18.18.0
+
+WORKDIR /home/ubuntu/app
+
+COPY signal-server ./signal-server
+
+WORKDIR /home/ubuntu/app/signal-server
+
+RUN yarn
+RUN yarn build
+
+EXPOSE 8081
+
+ENTRYPOINT [ "node", "dist/main.js" ]

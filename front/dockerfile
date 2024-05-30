@@ -1,0 +1,15 @@
+FROM node:18.18.0
+
+WORKDIR /home/ubuntu/app
+
+COPY front ./front
+
+WORKDIR /home/ubuntu/app/front
+
+RUN yarn
+RUN npm install -g http-server
+RUN yarn build
+
+EXPOSE 5173
+
+ENTRYPOINT [ "http-server", "-c-1", "-p", "5173", "dist" ]
