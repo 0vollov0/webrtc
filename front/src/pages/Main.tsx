@@ -47,7 +47,7 @@ export const Main: React.FC = () => {
       }).then(setStream);
     }    
     return () => setStream(undefined);
-  }, [videoinputs, audioinputs])
+  }, [videoinputs, audioinputs, deviceState.audioinput, deviceState.videoinput])
 
   return (
     <React.Fragment>
