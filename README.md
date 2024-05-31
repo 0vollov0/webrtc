@@ -25,24 +25,51 @@ npm run dev or yarn dev
 
 ```mermaid
 sequenceDiagram
-    participant A as Client A
-    participant B as Client B
-    participant S as Signal Server
-    B->>S : Create Room(connect websocket)
-    A->>S : Join Room(connect websocket)
-    B->>S : Send Offer
-    S-->>A : Send Offer
-    A->>A : Store Remote Peer
-    A->>A : Create Answer
-    A->>S : Send Answer
-    S-->>B : Send Answer
-    B->>B : Store Remote Peer
-    B->>S : Send Icecandidate
-    A->>S : Send Icecandidate
-    S-->>B : Send Icecandidate
-    B->>B : Enable Remote Peer
-    S-->>A : Send Icecandidate
-    A->>A : Enable Remote Peer
+    Participant A as Peer A
+    Participant B as Peer B
+    Participant S as Signal Server
+    Participant T as Turn Server
+    autonumber
+
+    A ->>+ S : create room
+    activate A
+    S -->>- A: room info(name, participants)
+    A ->> A: create local stream
+    deactivate A
+
+    B ->>+ S : join room
+    activate B
+    S -->>- B: room info(name, participants)
+    B ->> B: create local stream
+    alt participants > 2
+        B ->> B: create offer
+        B ->> S: send offer
+        activate S
+        deactivate B
+        S -->> A: send B offer
+        deactivate S
+        activate A
+        A ->> A : create peer B connection
+        A ->> A : create answer B
+        A ->> S : send answer
+        deactivate A
+        activate S
+        S -->> B: send A answer
+        deactivate S
+        activate B
+        B ->> B: create peer A connection
+        deactivate B
+        B ->> T: request Public Peer A IP
+        A ->> T: request Public Peer B IP
+        T -->> B: response icecandidate signal
+        T -->> A: response icecandidate signal
+        A ->> S : send icecandidate
+        B ->> S : send icecandidate
+        S -->> B : send icecandidate
+        S -->> A : send icecandidate
+        A ->> B : send tracks
+        B ->> A : send tracks
+    end
 ```
 
 ## Usage
@@ -52,3 +79,6 @@ you can create or join the name of the room you want to chat with. If you are co
 ## Do you want to publish?
 
 If you want to expand this project and run it on a real server, you will need to use the address of the actual workable turn server for the setting of the RTC Configuration in the front project, and it is recommended that you have an address with HTTPS protocol applied.
+
+## Demo video
+![DEMO](./webrtc_demo.gif)
