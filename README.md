@@ -64,10 +64,10 @@ sequenceDiagram
         activate B
         B ->> B: create peer A connection
         deactivate B
-        B ->> T: request Public Peer A IP
-        A ->> T: request Public Peer B IP
-        T -->> B: response icecandidate signal
-        T -->> A: response icecandidate signal
+        A ->> T: request Public Peer A IP
+        B ->> T: request Public Peer B IP
+        T -->> A: response Public Peer A IP
+        T -->> B: response Public Peer B IP
         A ->> S : send icecandidate
         B ->> S : send icecandidate
         S -->> B : send icecandidate
