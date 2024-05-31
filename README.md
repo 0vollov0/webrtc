@@ -21,6 +21,11 @@ run front
 npm run dev or yarn dev
 ```
 
+## PORT
+
+- front 5173
+- signal-server 8081
+
 ## Sequence diagram
 
 ```mermaid
