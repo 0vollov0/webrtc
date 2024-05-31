@@ -33,7 +33,7 @@ sequenceDiagram
     Participant A as Peer A
     Participant B as Peer B
     Participant S as Signal Server
-    Participant T as Turn Server
+    Participant T as Sturn Server
     autonumber
 
     A ->>+ S : create room
