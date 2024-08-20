@@ -1,7 +1,7 @@
 
 ## WebRTC Demonstration Project
 
-The project I developed is a program that can send and receive voice and video data in real time between users using WebRTC (Web Real-Time Communication). The biggest feature of this project is that it can communicate in a peer-to-peer (P2P) way without going through a main server.
+This project is a program that can send and receive voice and video data in real time between users using WebRTC (Web Real-Time Communication). The biggest feature of this project is that it can communicate in a peer-to-peer (P2P) way without going through a main server.
 
 ## Features
 - **Deploy responsive UI**: I have built a responsive UI to deliver an optimal user experience across various devices. It provides consistent design and seamless functionality on both desktop and mobile environments, adapting flexibly to different screen sizes.
